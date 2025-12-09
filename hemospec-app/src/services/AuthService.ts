@@ -1,3 +1,5 @@
+import { apiService } from './ApiService';
+
 export interface User {
     id: string;
     email: string;
@@ -7,31 +9,38 @@ export interface User {
 
 class AuthService {
     private currentUser: User | null = null;
+    private token: string | null = null;
 
     public async login(email: string, password: string): Promise<User> {
-        // Mock login
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        try {
+            const response = await apiService.login(email, password);
+            this.token = response.access_token;
 
-        if (password === 'error') {
-            throw new Error('Invalid credentials');
+            // For now, mock the user details as the API only returns token
+            this.currentUser = {
+                id: '2',
+                email: email,
+                role: 'doctor',
+                name: email.includes('daniel') ? 'Daniel Sousa' : 'User'
+            };
+            return this.currentUser;
+        } catch (error) {
+            console.error('Login failed', error);
+            throw error;
         }
-
-        this.currentUser = {
-            id: '1',
-            email,
-            role: 'doctor',
-            name: 'Dr. Silva'
-        };
-
-        return this.currentUser;
     }
 
     public async logout(): Promise<void> {
         this.currentUser = null;
+        this.token = null;
     }
 
     public getUser(): User | null {
         return this.currentUser;
+    }
+
+    public getToken(): string | null {
+        return this.token;
     }
 
     public isAuthenticated(): boolean {
