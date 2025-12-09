@@ -1,0 +1,6 @@
+MainPackage=D:\Git\ISC_NIRScan_Win_BLE\bin\x64\Release\Upload\ISC_NIRScan_Win_BLE_1.0.26.0_x64.msix
+SymbolPackage=D:\Git\ISC_NIRScan_Win_BLE\bin\x64\Release\Upload\ISC_NIRScan_Win_BLE_1.0.26.0\ISC_NIRScan_Win_BLE_1.0.26.0_x64.appxsym
+ResourcePack=D:\Git\ISC_NIRScan_Win_BLE\bin\x64\Release\Upload\ISC_NIRScan_Win_BLE_1.0.26.0_scale-100.msix
+ResourcePack=D:\Git\ISC_NIRScan_Win_BLE\bin\x64\Release\Upload\ISC_NIRScan_Win_BLE_1.0.26.0_scale-125.msix
+ResourcePack=D:\Git\ISC_NIRScan_Win_BLE\bin\x64\Release\Upload\ISC_NIRScan_Win_BLE_1.0.26.0_scale-150.msix
+ResourcePack=D:\Git\ISC_NIRScan_Win_BLE\bin\x64\Release\Upload\ISC_NIRScan_Win_BLE_1.0.26.0_scale-400.msix
