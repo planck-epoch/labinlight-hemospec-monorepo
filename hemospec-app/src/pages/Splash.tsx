@@ -1,4 +1,4 @@
-import { IonContent, IonPage, IonSpinner } from '@ionic/react';
+import { IonContent, IonPage } from '@ionic/react';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import './Splash.css';
@@ -7,32 +7,39 @@ const Splash: React.FC = () => {
   const history = useHistory();
   const [verificationText, setVerificationText] = useState('Verifying parameter Bluetooth...');
   const [verificationState, setVerificationState] = useState<'verifying' | 'verified'>('verifying');
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     const sequence = async () => {
+        // Start
+        setProgress(10);
+
         // Step 1: Bluetooth
         setVerificationText('Verifying parameter Bluetooth...');
         setVerificationState('verifying');
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
         setVerificationText('Bluetooth • Verified');
         setVerificationState('verified');
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        setProgress(33);
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         // Step 2: Cloud
         setVerificationText('Verifying parameter Cloud...');
         setVerificationState('verifying');
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
         setVerificationText('Cloud • Verified');
         setVerificationState('verified');
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        setProgress(66);
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         // Step 3: Sensors
         setVerificationText('Verifying parameter Sensors...');
         setVerificationState('verifying');
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
         setVerificationText('Sensors • Verified');
         setVerificationState('verified');
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        setProgress(100);
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         // Done
         history.replace('/login');
@@ -64,15 +71,17 @@ const Splash: React.FC = () => {
             <div style={{
                 marginTop: '10px',
                 width: '80%',
-                height: '2px',
+                height: '4px', // Thicker bar
                 backgroundColor: '#333',
-                position: 'relative'
+                position: 'relative',
+                borderRadius: '2px'
             }}>
                 <div style={{
-                    width: verificationState === 'verifying' ? '50%' : '100%',
+                    width: `${progress}%`,
                     height: '100%',
-                    backgroundColor: '#006064',
-                    transition: 'width 0.5s ease-in-out'
+                    backgroundColor: '#00B8D4', // Brighter cyan
+                    transition: 'width 0.5s ease-in-out',
+                    borderRadius: '2px'
                 }}></div>
             </div>
 

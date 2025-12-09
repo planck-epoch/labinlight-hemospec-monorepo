@@ -2,10 +2,14 @@ import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButtons, IonBu
 import { optionsOutline } from 'ionicons/icons';
 import { authService } from '../services/AuthService';
 import { useHistory } from 'react-router-dom';
+import { useState } from 'react';
+import DeviceConnectionModal from '../components/DeviceConnectionModal';
+import { deviceService } from '../services/DeviceService';
 
 const Home: React.FC = () => {
     const history = useHistory();
     const user = authService.getUser();
+    const [showConnectionModal, setShowConnectionModal] = useState(false);
 
     // Initials for avatar
     const getInitials = (name: string) => {
@@ -15,6 +19,16 @@ const Home: React.FC = () => {
             .join('')
             .toUpperCase()
             .substring(0, 2);
+    };
+
+    const handleNewTest = () => {
+        // Always trigger modal to verify connection/status before starting
+        setShowConnectionModal(true);
+    };
+
+    const onDeviceReady = () => {
+        setShowConnectionModal(false);
+        history.push('/app/exam/patient');
     };
 
   return (
@@ -71,7 +85,7 @@ const Home: React.FC = () => {
             </div>
 
             <div
-                onClick={() => history.push('/app/exam/patient')}
+                onClick={handleNewTest}
                 style={{
                     backgroundColor: '#00838F',
                     color: 'white',
@@ -83,11 +97,15 @@ const Home: React.FC = () => {
                     boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                 }}
             >
-                {/* Custom icon or ionic icon? Using standard for now unless image is preferred */}
-                {/* <IonIcon icon={addCircleOutline} style={{ marginRight: '8px' }} /> */}
                 <img src="/assets/icon_action_button_new_test.png" style={{ height: '20px', marginRight: '10px' }} alt="" />
                 <span style={{ fontWeight: 'bold' }}>New test</span>
             </div>
+
+            <DeviceConnectionModal
+                isOpen={showConnectionModal}
+                onDismiss={() => setShowConnectionModal(false)}
+                onDeviceReady={onDeviceReady}
+            />
 
         </div>
       </IonContent>

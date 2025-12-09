@@ -11,6 +11,11 @@ export class UsersService {
       email: 'test@example.com',
       passwordHash: bcrypt.hashSync('password123', 10), // Store hashed passwords
     },
+    {
+      id: 2,
+      email: 'daniel.sousa@labinlight.com',
+      passwordHash: bcrypt.hashSync('secret', 10),
+    },
   ];
 
   async findOneByEmail(email: string): Promise<User | undefined> {

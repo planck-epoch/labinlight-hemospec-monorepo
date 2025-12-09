@@ -1,98 +1,64 @@
-export interface DeviceResult {
-  hematocrit: number;
-  hemoglobin: number;
-  rdw: number;
-  rbc: number;
-  timestamp: string;
-}
-
-export interface DeviceStatus {
-  connected: boolean;
-  batteryLevel: number; // 0-100
-  isScanning: boolean;
-  cartridgeInserted: boolean;
+export interface BleDevice {
+    deviceId: string;
+    name: string;
+    rssi: number;
 }
 
 class DeviceService {
-  private static instance: DeviceService;
-  private status: DeviceStatus = {
-    connected: false,
-    batteryLevel: 85,
-    isScanning: false,
-    cartridgeInserted: false,
-  };
+    private connectedDevice: BleDevice | null = null;
+    private isConnectedState = false;
 
-  private listeners: ((status: DeviceStatus) => void)[] = [];
-
-  private constructor() {}
-
-  public static getInstance(): DeviceService {
-    if (!DeviceService.instance) {
-      DeviceService.instance = new DeviceService();
+    // Simulate scanning for devices
+    public async scan(): Promise<BleDevice[]> {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve([
+                    { deviceId: 'dev_1', name: 'Hemospec Device A1', rssi: -60 },
+                    { deviceId: 'dev_2', name: 'Hemospec Device B2', rssi: -75 },
+                ]);
+            }, 2000);
+        });
     }
-    return DeviceService.instance;
-  }
 
-  public subscribe(callback: (status: DeviceStatus) => void) {
-    this.listeners.push(callback);
-    callback(this.status);
-    return () => {
-      this.listeners = this.listeners.filter((l) => l !== callback);
-    };
-  }
-
-  private updateStatus(newStatus: Partial<DeviceStatus>) {
-    this.status = { ...this.status, ...newStatus };
-    this.listeners.forEach((l) => l(this.status));
-  }
-
-  public async scanAndConnect(): Promise<boolean> {
-    this.updateStatus({ isScanning: true });
-
-    // Simulate scanning delay
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    // Simulate 90% success rate
-    const success = Math.random() > 0.1;
-
-    if (success) {
-      this.updateStatus({
-        isScanning: false,
-        connected: true,
-        batteryLevel: Math.floor(Math.random() * 30) + 70 // Random level 70-100
-      });
-      return true;
-    } else {
-      this.updateStatus({ isScanning: false, connected: false });
-      throw new Error("Device not found");
+    // Simulate connection
+    public async connect(deviceId: string): Promise<boolean> {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                this.connectedDevice = { deviceId, name: 'Hemospec Device', rssi: -60 };
+                this.isConnectedState = true;
+                resolve(true);
+            }, 1500);
+        });
     }
-  }
 
-  public async disconnect() {
-    this.updateStatus({ connected: false, cartridgeInserted: false });
-  }
+    public async disconnect(): Promise<void> {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                this.connectedDevice = null;
+                this.isConnectedState = false;
+                resolve();
+            }, 500);
+        });
+    }
 
-  public insertCartridge() {
-      // Simulate physical action
-      this.updateStatus({ cartridgeInserted: true });
-  }
+    // Simulate getting temperature from device
+    public async getTemperature(): Promise<number> {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                // Return a temperature > 30 for success, or random for testing?
+                // For this requirement, we assume it works if connected.
+                resolve(32.5);
+            }, 1000);
+        });
+    }
 
-  public async runAnalysis(): Promise<DeviceResult> {
-    if (!this.status.connected) throw new Error("Device not connected");
-    if (!this.status.cartridgeInserted) throw new Error("No cartridge detected");
+    public isConnected(): boolean {
+        return this.isConnectedState;
+    }
 
-    // Simulate analysis time (e.g., 5 seconds)
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-
-    // Return mock results
-    return {
-      hematocrit: 42.5,
-      hemoglobin: 14.2,
-      rdw: 13.5,
-      rbc: 4.8,
-      timestamp: new Date().toISOString()
-    };
-  }
+    public getConnectedDevice(): BleDevice | null {
+        return this.connectedDevice;
+    }
 }
 
-export const deviceService = DeviceService.getInstance();
+export const deviceService = new DeviceService();
