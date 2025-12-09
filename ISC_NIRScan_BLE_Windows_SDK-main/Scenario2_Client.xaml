@@ -1,0 +1,38 @@
+<!--
+//*********************************************************
+//
+// Copyright (c) Microsoft. All rights reserved.
+// This code is licensed under the MIT License (MIT).
+// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
+// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
+// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
+//
+//*********************************************************
+-->
+<Page
+    x:Class="ISC_BLE_SDK.Scenario2_Client"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="using:ISC_BLE_SDK"
+    mc:Ignorable="d">
+    <ScrollViewer Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="12,10,12,12">
+        <StackPanel>
+            <TextBlock Text="Description:" Style="{StaticResource SampleHeaderTextStyle}"/>
+            <TextBlock Style="{StaticResource ScenarioDescriptionTextStyle}" Text="Query services from ISC device"/>
+            <TextBlock TextWrapping="Wrap" Margin="0,10,0,0" Text="This scenario connects to the Bluetooth Low Energy device selected in the &quot;Discover ISC devices&quot; scenario and communicates with the device for services and characteristics."/>
+            <TextBlock Style="{StaticResource ListItemTextStyle}" TextWrapping="Wrap" Margin="0,10,0,0">
+                Selected device: <Run x:Name="SelectedDeviceRun" FontWeight="Bold"/>
+            </TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="ConnectButton" Content="Connect" Click="{x:Bind ConnectButton_Click}" Margin="20,10,20,10"/>
+                <Button x:Name="DisconnectButton" Content="Disconnect" Click="{x:Bind DisconnectButton_Click}" Margin="0,10,0,10"/>
+            </StackPanel>
+            <TextBlock x:Name="CharacteristicFoundListTitle" Style="{StaticResource SampleHeaderTextStyle}" TextWrapping="Wrap" Margin="0,10,0,0"
+                Text="Found Services/Characteristics:" />
+            <TextBlock x:Name="CharacteristicFoundList" TextWrapping="Wrap" Margin="20,10,0,0"/>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

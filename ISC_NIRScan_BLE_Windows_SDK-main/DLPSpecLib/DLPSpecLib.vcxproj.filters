@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="header">
+      <UniqueIdentifier>{72ccf232-7c80-4f7a-ad5c-854083703069}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib">
+      <UniqueIdentifier>{63cefd41-a163-4aaf-a8d0-c67440214de6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="DLPSpecLib.cpp" />
+    <ClCompile Include="pch.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DLPSpecLib.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="header\dlpspec.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\dlpspec_calib.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\dlpspec_had_defs.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\dlpspec_helper.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\dlpspec_scan.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\dlpspec_scan_col.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\dlpspec_scan_had.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\dlpspec_setup.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\dlpspec_types.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\dlpspec_util.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\dlpspec_version.h">
+      <Filter>header</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="lib\libdlpspec.dll">
+      <Filter>lib</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\libdlpspec.lib">
+      <Filter>lib</Filter>
+    </Library>
+  </ItemGroup>
+</Project>
