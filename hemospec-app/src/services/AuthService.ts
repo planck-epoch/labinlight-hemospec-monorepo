@@ -9,21 +9,18 @@ class AuthService {
     private currentUser: User | null = null;
 
     public async login(email: string, password: string): Promise<User> {
-        // Mock login
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        if (password === 'error') {
-            throw new Error('Invalid credentials');
+        // Hardcoded login for testing
+        if (email === 'daniel.sousa@labinlight.com' && password === 'secret') {
+            this.currentUser = {
+                id: '1',
+                email: 'daniel.sousa@labinlight.com',
+                role: 'doctor',
+                name: 'Daniel Sousa'
+            };
+            return this.currentUser;
         }
 
-        this.currentUser = {
-            id: '1',
-            email,
-            role: 'doctor',
-            name: 'Dr. Silva'
-        };
-
-        return this.currentUser;
+        throw new Error('Invalid credentials');
     }
 
     public async logout(): Promise<void> {
