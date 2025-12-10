@@ -1,72 +1,87 @@
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonProgressBar, IonText } from '@ionic/react';
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonProgressBar, IonText, IonButton, IonIcon } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
+import { bluetooth } from 'ionicons/icons';
 import { deviceService } from '../../services/DeviceService';
+import { apiService } from '../../services/ApiService';
+import './Exam.css';
 
 const Analysis: React.FC = () => {
   const history = useHistory();
+  const [status, setStatus] = useState('Initializing...');
   const [progress, setProgress] = useState(0);
-  const [statusText, setStatusText] = useState('Initializing...');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const run = async () => {
-        // Start simulated progress bar
-        const interval = setInterval(() => {
-            setProgress(prev => {
-                if (prev >= 1) {
-                    clearInterval(interval);
-                    return 1;
-                }
-                return prev + 0.01;
-            });
-        }, 50); // 5000ms total roughly
+    runAnalysis();
+  }, []);
 
-        setTimeout(() => setStatusText('Analyzing Sample...'), 1500);
-        setTimeout(() => setStatusText('Calibrating Results...'), 3500);
+  const runAnalysis = async () => {
+    try {
+      setStatus('Connecting to device...');
+      setProgress(0.1);
 
-        try {
-            const result = await deviceService.runAnalysis();
-            // Pass results via state or context (for simplicity using location state here or just re-fetching/mocking)
-            // In a real app we'd use a Context or Redux store.
-            // For now, let's just navigate.
+      // Ensure connected (might be redundant if already connected, but safe)
+      await deviceService.scanAndConnect();
 
-            history.replace({
-                pathname: '/app/exam/results',
-                state: { result }
-            });
-        } catch (e) {
-            alert('Analysis Failed: ' + e);
-            history.goBack();
-        } finally {
-            clearInterval(interval);
-        }
-    };
+      setStatus('Scanning sample...');
+      setProgress(0.3);
 
-    run();
-  }, [history]);
+      // Get raw scan data
+      const scanResult = await deviceService.scan();
+
+      setStatus('Processing data...');
+      setProgress(0.6);
+
+      // Format the data using the template to match backend DTO
+      const payload = deviceService.formatScanData(scanResult);
+
+      setStatus('Analyzing Sample...');
+
+      // Send to API
+      const response = await apiService.analyze(payload);
+
+      setStatus('Analysis complete');
+      setProgress(1.0);
+
+      // Navigate to results
+      history.push('/exam/results', { result: response });
+
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Analysis failed');
+      setStatus('Error occurred');
+    }
+  };
 
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Analysis in Progress</IonTitle>
+          <IonTitle>Analysis</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding ion-text-center">
+      <IonContent className="ion-padding">
+        <div className="analysis-container">
+          <IonIcon icon={bluetooth} size="large" className="bluetooth-icon" />
 
-        <div style={{ marginTop: '30vh' }}>
-            <h2 style={{ color: 'var(--ion-color-primary)' }}>{Math.round(progress * 100)}%</h2>
-            <IonProgressBar value={progress} color="primary" style={{ height: '10px', borderRadius: '5px' }} />
+          <IonText>
+            <h2>{status}</h2>
+          </IonText>
 
-            <p style={{ marginTop: '20px', fontSize: '1.2rem', color: '#666' }}>
-                {statusText}
-            </p>
+          <IonProgressBar value={progress} buffer={progress + 0.1}></IonProgressBar>
 
-            <p style={{ marginTop: '50px', fontSize: '0.9rem', color: '#999' }}>
-                Do not remove the cartridge or turn off the device.
-            </p>
+          {error && (
+            <div className="error-message">
+              <IonText color="danger">
+                <p>{error}</p>
+              </IonText>
+              <IonButton expand="block" onClick={() => history.push('/exam/device')}>
+                Try Again
+              </IonButton>
+            </div>
+          )}
         </div>
-
       </IonContent>
     </IonPage>
   );

@@ -1,3 +1,8 @@
+# Handle the prediction service subdomain
+predict.labinlight.dev {
+    reverse_proxy predict:8080
+}
+
 # Redirect all other main traffic to the backend API
 api.labinlight.dev, www.api.labinlight.dev, labinlight.dev, www.labinlight.dev {
     # Optional: Remove strict security headers if you are still debugging
