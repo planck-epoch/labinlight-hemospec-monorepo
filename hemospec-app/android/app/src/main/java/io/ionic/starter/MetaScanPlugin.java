@@ -251,7 +251,7 @@ public class MetaScanPlugin extends Plugin {
     public void disconnect(PluginCall call) {
         String address = call.getString("address");
         if (mNanoBLEService != null) {
-             mNanoBLEService.disconnect(address);
+             mNanoBLEService.disconnect();
              call.resolve();
         } else {
              call.reject("Service not bound");
@@ -334,7 +334,6 @@ public class MetaScanPlugin extends Plugin {
     public void getDeviceStatus(PluginCall call) {
         try {
             ISCMetaScanSDK.GetDeviceStatus();
-            ISCMetaScanSDK.GetSerialNumber();
 
             JSObject ret = new JSObject();
             ret.put("battery", mBattery);
