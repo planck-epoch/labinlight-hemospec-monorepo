@@ -63,6 +63,7 @@ public class MetaScanPlugin extends Plugin {
     private float mTemp = 0;
     private float mHumidity = 0;
     private long mLampTime = 0;
+    private String mSerialNumber = "Unknown";
 
     private final BroadcastReceiver ScanDataReadyReceiver = new BroadcastReceiver() {
         @Override
@@ -118,6 +119,16 @@ public class MetaScanPlugin extends Plugin {
         }
     };
 
+    private final BroadcastReceiver DeviceInfoReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String serial = intent.getStringExtra(ISCMetaScanSDK.EXTRA_SERIAL_NUM);
+            if (serial != null) {
+                mSerialNumber = serial;
+            }
+        }
+    };
+
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
@@ -153,6 +164,7 @@ public class MetaScanPlugin extends Plugin {
         LocalBroadcastManager.getInstance(context).registerReceiver(NotifyCompleteReceiver, new IntentFilter(ISCMetaScanSDK.ACTION_NOTIFY_DONE));
         LocalBroadcastManager.getInstance(context).registerReceiver(DisconnectReceiver, new IntentFilter(ISCMetaScanSDK.ACTION_GATT_DISCONNECTED));
         LocalBroadcastManager.getInstance(context).registerReceiver(GetDeviceStatusReceiver, new IntentFilter(ISCMetaScanSDK.ACTION_STATUS));
+        LocalBroadcastManager.getInstance(context).registerReceiver(DeviceInfoReceiver, new IntentFilter(ISCMetaScanSDK.ACTION_INFO));
     }
 
     @Override
@@ -165,6 +177,7 @@ public class MetaScanPlugin extends Plugin {
         LocalBroadcastManager.getInstance(context).unregisterReceiver(NotifyCompleteReceiver);
         LocalBroadcastManager.getInstance(context).unregisterReceiver(DisconnectReceiver);
         LocalBroadcastManager.getInstance(context).unregisterReceiver(GetDeviceStatusReceiver);
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(DeviceInfoReceiver);
     }
 
     @PluginMethod
@@ -251,7 +264,7 @@ public class MetaScanPlugin extends Plugin {
     public void disconnect(PluginCall call) {
         String address = call.getString("address");
         if (mNanoBLEService != null) {
-             mNanoBLEService.disconnect(address);
+             mNanoBLEService.disconnect();
              call.resolve();
         } else {
              call.reject("Service not bound");
@@ -334,17 +347,13 @@ public class MetaScanPlugin extends Plugin {
     public void getDeviceStatus(PluginCall call) {
         try {
             ISCMetaScanSDK.GetDeviceStatus();
-            ISCMetaScanSDK.GetSerialNumber();
+            ISCMetaScanSDK.GetDeviceInfo();
 
             JSObject ret = new JSObject();
             ret.put("battery", mBattery);
             ret.put("temp", mTemp);
             ret.put("humidity", mHumidity);
-            if (ISCMetaScanSDK.current_scanConf != null) {
-                ret.put("serial", ISCMetaScanSDK.current_scanConf.getScanConfigSerialNumber());
-            } else {
-                ret.put("serial", "Unknown");
-            }
+            ret.put("serial", mSerialNumber);
             call.resolve(ret);
         } catch(Exception e) {
             call.reject("Error getting status: " + e.getMessage());
