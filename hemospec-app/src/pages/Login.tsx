@@ -97,7 +97,7 @@ const Login: React.FC = () => {
                         onIonChange={e => setEmail(e.detail.value!)}
                         type="email"
                         placeholder="user@mail.example"
-                        style={{ '--background': 'transparent' }}
+                        style={{ '--background': 'transparent', '--color': 'var(--ion-color-dark)', '--placeholder-color': 'var(--ion-color-medium)' }}
                       />
                   </IonItem>
               </div>
@@ -111,7 +111,7 @@ const Login: React.FC = () => {
                         onIonChange={e => setPassword(e.detail.value!)}
                         type={showPassword ? 'text' : 'password'}
                         placeholder="password"
-                        style={{ '--background': 'transparent' }}
+                        style={{ '--background': 'transparent', '--color': 'var(--ion-color-dark)', '--placeholder-color': 'var(--ion-color-medium)' }}
                       />
                       <IonIcon
                         icon={showPassword ? eyeOffOutline : eyeOutline}

@@ -1,20 +1,19 @@
+import { logger } from './LoggerService';
+
 export interface LoginResponse {
     access_token: string;
 }
 
 export interface AnalyzeResponse {
-    // Define based on what the API returns.
-    // Usually NestJS returns the result of the service method.
-    // The service returns the saved Analysis object.
     id?: string;
     result?: any;
-    // Add other fields as observed/needed
+    [key: string]: any;
 }
 
 export interface HistoryItem {
     id: string;
     date: string;
-    // ...
+    [key: string]: any;
 }
 
 class ApiService {
@@ -30,47 +29,69 @@ class ApiService {
         return headers;
     }
 
+    private async request<T>(url: string, options: RequestInit): Promise<T> {
+        const fullUrl = `${this.baseUrl}${url}`;
+
+        logger.info(`API Request: ${options.method} ${url}`, {
+            url: fullUrl,
+            method: options.method,
+            body: options.body ? JSON.parse(options.body as string) : undefined
+        });
+
+        try {
+            const response = await fetch(fullUrl, options);
+
+            let data: any;
+            const contentType = response.headers.get("content-type");
+
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                data = await response.json();
+            } else {
+                data = await response.text();
+            }
+
+            if (!response.ok) {
+                logger.error(`API Error: ${response.status} ${url}`, {
+                    status: response.status,
+                    statusText: response.statusText,
+                    body: data
+                });
+                throw new Error(typeof data === 'string' ? data : JSON.stringify(data) || response.statusText);
+            }
+
+            logger.info(`API Response: ${response.status} ${url}`, {
+                status: response.status,
+                body: data
+            });
+
+            return data as T;
+        } catch (error: any) {
+            logger.error(`API Network Error: ${url}`, error);
+            throw error;
+        }
+    }
+
     public async login(email: string, password: string): Promise<LoginResponse> {
-        const response = await fetch(`${this.baseUrl}/auth/login`, {
+        return this.request<LoginResponse>('/auth/login', {
             method: 'POST',
             headers: this.getHeaders(),
             body: JSON.stringify({ email, password }),
         });
-
-        if (!response.ok) {
-            throw new Error('Login failed');
-        }
-
-        return response.json();
     }
 
     public async analyze(data: any): Promise<AnalyzeResponse> {
-        // No auth required for now as per controller comments
-        const response = await fetch(`${this.baseUrl}/analyze`, {
+        return this.request<AnalyzeResponse>('/analyze', {
             method: 'POST',
             headers: this.getHeaders(),
             body: JSON.stringify(data),
         });
-
-        if (!response.ok) {
-            const err = await response.text();
-            throw new Error(`Analysis failed: ${err}`);
-        }
-
-        return response.json();
     }
 
     public async getHistory(patientId: string, token: string): Promise<HistoryItem[]> {
-        const response = await fetch(`${this.baseUrl}/history/patient/${patientId}`, {
+        return this.request<HistoryItem[]>(`/history/patient/${patientId}`, {
             method: 'GET',
             headers: this.getHeaders(token),
         });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch history');
-        }
-
-        return response.json();
     }
 }
 
