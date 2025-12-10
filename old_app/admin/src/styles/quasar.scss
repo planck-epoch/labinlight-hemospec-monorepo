@@ -1,0 +1,89 @@
+@import './quasar.variables.scss';
+@import '~quasar-styl';
+// @import '~quasar-addon-styl';
+
+// Minimum breakpoint width. Null for the smallest (first) breakpoint.
+//
+@function breakpoint-min($name, $breakpoints: $sizes) {
+  $min: map-get($breakpoints, $name);
+  @return if($min != 0, $min, null);
+}
+
+// Returns a blank string if smallest breakpoint, otherwise returns the name with a dash infront.
+// Useful for making responsive utilities.
+//
+//    >> breakpoint-infix(xs, (xs: 0, sm: 576px, md: 768px, lg: 992px, xl: 1200px))
+//    ""  (Returns a blank string)
+//    >> breakpoint-infix(sm, (xs: 0, sm: 576px, md: 768px, lg: 992px, xl: 1200px))
+//    "-sm"
+@function breakpoint-infix($name, $breakpoints: $sizes) {
+  @return if(breakpoint-min($name, $breakpoints) == null, "", "-#{$name}");
+}
+
+// Media of at least the minimum breakpoint width. No query for the smallest breakpoint.
+// Makes the @content apply to the given breakpoint and wider.
+@mixin media-breakpoint-up($name, $breakpoints: $sizes) {
+  $min: breakpoint-min($name, $breakpoints);
+  @if $min {
+    @media (min-width: $min) {
+      @content;
+    }
+  } @else {
+    @content;
+  }
+}
+
+$alignments: ('right', 'left', 'center', 'justify');
+
+@each $breakpoint in map-keys($sizes) {
+  @include media-breakpoint-up($breakpoint){
+    $infix: breakpoint-infix($breakpoint, $sizes);
+
+    @each $alignment in $alignments {
+      .text#{$infix}-#{$alignment} {text-align: #{$alignment} }
+    }
+  }
+}
+
+
+/****** *****/
+.crud-header {
+  flex-direction: column-reverse;
+  @media (min-width: $breakpoint-sm-min) {
+    flex-direction: row;
+  }
+
+  .filter-col {
+    display: none;
+
+    &.filter-open {
+      display: block;
+    }
+
+    @media (min-width: $breakpoint-sm-min) {
+      display: block;
+    }
+  }
+
+  .q-item__label--header {
+    font-size: 1rem;
+  }
+}
+
+.filter-holder {
+  display: flex;
+  align-items: center;
+
+  justify-content: center;
+  @media (min-width: $breakpoint-sm-min) {
+    justify-content: flex-end;
+  }
+
+  .material-icons {
+    font-size: 16px;
+  }
+}
+
+.crud-item {
+  border-bottom: 1px solid rgba(212, 211, 225, 0.53);
+}

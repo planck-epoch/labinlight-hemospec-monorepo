@@ -1,0 +1,20 @@
+name: CD
+on:
+  push:
+    tags:
+      - v[0-9]+\.[0-9]+\.[0-9]+
+      - dev
+jobs:
+  cd:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: azure/docker-login@v2
+        with:
+          login-server: 'datainlight.azurecr.io'
+          username: '${{ secrets.CR_USERNAME }}'
+          password: '${{ secrets.CR_PASSWORD }}'
+      - name: Build image
+        run: |
+          docker build --platform linux/amd64  -t datainlight.azurecr.io/lil/api:${{ github.ref_name }} . 
+          docker push datainlight.azurecr.io/lil/api:${{ github.ref_name }}

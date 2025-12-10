@@ -1,0 +1,71 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:id="@+id/layout_main">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:layout_gravity="center" >
+
+        <Button
+            android:id="@+id/btn_status"
+            android:layout_width="80dp"
+            android:layout_height="@dimen/dip40"
+            android:layout_alignParentBottom="true"
+            android:layout_weight="0.25"
+            android:background="@color/orange"
+            android:text="Status"
+            android:textColor="@color/black"
+            android:textAllCaps="false"
+            android:textSize="16sp"/>
+
+        <Button
+            android:id="@+id/btn_info"
+            android:layout_width="80dp"
+            android:layout_height="@dimen/dip40"
+            android:layout_alignParentBottom="true"
+            android:layout_weight="0.25"
+            android:background="@color/gainsboro"
+            android:text="Information"
+            android:textColor="@color/black"
+            android:textAllCaps="false"
+            android:textSize="16sp"/>
+
+        <Button
+            android:id="@+id/btn_error"
+            android:layout_width="80dp"
+            android:layout_height="@dimen/dip40"
+            android:layout_alignParentBottom="true"
+            android:layout_weight="0.25"
+            android:background="@color/gainsboro"
+            android:text="Error"
+            android:textColor="@color/black"
+            android:textAllCaps="false"
+            android:textSize="16sp"/>
+    </LinearLayout>
+    <ProgressBar
+        android:id="@+id/calProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|center_vertical"
+        android:indeterminate="true" />
+    <TextView
+        android:id="@+id/progressBarinsideText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/calProgress"
+        android:layout_gravity="center_horizontal|center_vertical"
+        android:textColor="@color/black"
+        android:text="@string/getting_status" />
+
+    <ListView
+        android:id="@+id/listview_devicestatus"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</LinearLayout>

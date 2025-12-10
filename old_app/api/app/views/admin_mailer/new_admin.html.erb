@@ -1,0 +1,11 @@
+<% content_for :preview do %>
+  Warning!
+<% end %>
+
+<p>A new admin has been created:</p>
+
+<div class="alert alert-warning mt-3 mb-4">
+  <div class="text-center"><%= @email %></div>
+</div>
+
+<%= link_to 'LOGIN', ENV['ADMIN_URL'], class: 'btn btn-primary btn-md mx-auto mt-3 mb-3' %>

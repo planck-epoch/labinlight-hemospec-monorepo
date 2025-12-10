@@ -1,0 +1,71 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:id="@+id/layout_main"
+    android:background="@color/white">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:background="@color/white">
+        <ScrollView
+            android:id="@+id/scrollview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <RelativeLayout android:id="@+id/tmall"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/isc_logo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="@dimen/dip16"
+                    android:contentDescription="@string/desc_info"
+                    android:paddingStart="@dimen/dip32"
+                    android:paddingEnd="@dimen/dip32"
+                    android:src="@mipmap/isc_log_h" />
+
+                <ImageButton
+                    android:id="@+id/main_connect"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/isc_logo"
+                    android:layout_centerHorizontal="true"
+                    android:background="#00000000"
+                    android:src="@drawable/scan_flatx_isc" />
+            </RelativeLayout>
+        </ScrollView>
+    </RelativeLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/white">
+        <ImageButton
+            android:id="@+id/main_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignTop="@+id/main_setting"
+            android:background="#00000000"
+            android:src="@drawable/info_flatx"
+            android:layout_weight="1"/>
+
+        <ImageButton
+            android:id="@+id/main_setting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="20dp"
+            android:background="#00000000"
+            android:src="@drawable/setting_flatx"
+            android:layout_weight="1"/>
+    </LinearLayout>
+</LinearLayout>

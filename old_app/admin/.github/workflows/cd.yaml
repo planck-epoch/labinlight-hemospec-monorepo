@@ -1,0 +1,28 @@
+name: CD
+on:
+  push:
+    tags:
+      - v[0-9]+\.[0-9]+\.[0-9]+
+      - dev
+jobs:
+  cd:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Determine API URL
+        id: determine_api_url
+        run: |
+          if [[ ${{ github.ref_name }} == 'dev' ]]; then
+            echo "::set-output name=api_url::https://lil-admin-dev.datainlight.com/api"
+          else
+            echo "::set-output name=api_url::https://lil-admin.datainlight.com/api"
+          fi
+      - uses: azure/docker-login@v2
+        with:
+          login-server: 'datainlight.azurecr.io'
+          username: '${{ secrets.CR_USERNAME }}'
+          password: '${{ secrets.CR_PASSWORD }}'
+      - name: Build image
+        run: |
+          docker build --platform linux/amd64 --build-arg LIL_API_URL=${{ steps.determine_api_url.outputs.api_url }} -t datainlight.azurecr.io/lil/admin:${{ github.ref_name }} . 
+          docker push datainlight.azurecr.io/lil/admin:${{ github.ref_name }}

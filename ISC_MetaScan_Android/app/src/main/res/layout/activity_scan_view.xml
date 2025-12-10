@@ -1,0 +1,514 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:id="@+id/layout_main">
+
+    <RelativeLayout
+        android:id="@+id/rl_graph_list"
+        android:layout_width="match_parent"
+        android:layout_height="448dp"
+        android:layout_weight="1"
+        android:paddingBottom="@dimen/dip8"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/dip8">
+
+
+        <ScrollView
+            android:id="@+id/scrollview_scan"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <android.support.v4.view.ViewPager
+                    android:id="@+id/viewpager"
+                    android:layout_width="match_parent"
+                    android:layout_height="220dp" />
+                <ProgressBar
+                    android:id="@+id/calProgress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dip96"
+                    android:layout_centerHorizontal="true"
+                    android:indeterminate="true" />
+                <TextView
+                    android:id="@+id/progressBarinsideText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/calProgress"
+                    android:layout_centerHorizontal="true"
+                    android:textColor="@color/black"
+                    android:text="@string/dev_set"/>
+                <Button
+                    android:id="@+id/bt_scan"
+                    android:layout_below="@+id/viewpager"
+                    android:layout_centerHorizontal="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="35dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/button_style"
+                    android:text="@string/ref_scan"
+                    android:textAllCaps="false"
+                    android:textColor="@color/royalblue"
+                    android:textSize="20sp" />
+
+                <Button
+                    android:id="@+id/bt_set_default_config"
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:layout_below="@+id/bt_scan"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/button_style"
+                    android:text="@string/set_default_config"
+                    android:textAllCaps="false"
+                    android:textColor="@color/royalblue"
+                    android:textSize="18sp" />
+                <Button
+                    android:id="@+id/bt_save_config"
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:layout_below="@+id/bt_scan"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/button_style"
+                    android:text="@string/save_config"
+                    android:textAllCaps="false"
+                    android:textColor="@color/royalblue"
+                    android:textSize="18sp"
+                    android:visibility="gone"/>
+                <TextView
+                    android:id="@+id/tv_setting"
+                    android:layout_below="@+id/bt_set_default_config"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/action_settings"
+                    android:textAllCaps="false"
+                    android:textColor="@color/black"
+                    android:textSize="20sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/tv_currentconfig"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/bt_set_default_config"
+                    android:layout_marginLeft="@dimen/dip8"
+                    android:layout_marginTop="8dp"
+                    android:layout_toRightOf="@id/tv_setting"
+                    android:text="@string/configure"
+                    android:textAllCaps="false"
+                    android:textColor="@color/gray"
+                    android:textSize="18sp" />
+
+                <LinearLayout
+                    android:id="@+id/ly_setting"
+                    android:layout_width="match_parent"
+                    android:layout_height="28dp"
+                    android:orientation="horizontal"
+                    android:layout_gravity="center"
+                    android:layout_below="@+id/tv_currentconfig"
+                    android:layout_marginTop="8dp">
+                    <Button
+                        android:id="@+id/bt_scansetting"
+                        android:layout_width="80dp"
+                        android:layout_height="28dp"
+                        android:layout_weight="0.25"
+                        android:background="@drawable/button_style_gray"
+                        android:text="@string/scan_settings"
+                        android:textColor="@color/black"
+                        android:textAllCaps="false"
+                        android:textSize="16sp"/>
+
+                    <Button
+                        android:id="@+id/bt_devicesetting"
+                        android:layout_width="80dp"
+                        android:layout_height="28dp"
+                        android:layout_weight="0.25"
+                        android:background="@drawable/button_style_gray"
+                        android:text="@string/device_settings"
+                        android:textColor="@color/black"
+                        android:textAllCaps="false"
+                        android:textSize="16sp"/>
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:id="@+id/rl_refsetting"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/ly_setting"
+                    android:layout_marginLeft="@dimen/dip32">
+
+                    <TextView
+                        android:id="@+id/tv_refsetting"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:text="@string/reference_setting"
+                        android:textAllCaps="false"
+                        android:textColor="@color/black"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:id="@+id/ly_refsetting"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/tv_refsetting"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/btn_new"
+                            android:layout_width="80dp"
+                            android:layout_height="26dp"
+                            android:layout_weight="0.25"
+                            android:background="@drawable/button_style_skyblue"
+                            android:text="@string/ref_new"
+                            android:textAllCaps="false"
+                            android:textColor="@color/black"
+                            android:textSize="14sp" />
+
+                        <Button
+                            android:id="@+id/btn_previous"
+                            android:layout_width="80dp"
+                            android:layout_height="26dp"
+                            android:layout_weight="0.25"
+                            android:background="@drawable/button_style_skyblue"
+                            android:text="@string/ref_previous"
+                            android:textAllCaps="false"
+                            android:textColor="@color/gray"
+                            android:textSize="14sp" />
+
+                        <Button
+                            android:id="@+id/btn_builtin"
+                            android:layout_width="80dp"
+                            android:layout_height="26dp"
+                            android:layout_weight="0.25"
+                            android:background="@drawable/button_style_skyblue"
+                            android:text="@string/ref_builtin"
+                            android:textAllCaps="false"
+                            android:textColor="@color/black"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tv_continuous_scan"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/ly_refsetting"
+                        android:layout_marginTop="24dp"
+                        android:text="@string/auto_continuous_scan"
+                        android:textAllCaps="false"
+                        android:textColor="@color/black"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/lb_repeat_scantimes"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/tv_continuous_scan"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/repeat_scantimes"
+                        android:textColor="@color/black"
+                        android:textSize="18sp" />
+
+                    <EditText
+                        android:id="@+id/et_repeat_scantimes"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/tv_continuous_scan"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginLeft="@dimen/dip8"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/edittext_style"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
+                        android:paddingLeft="@dimen/dip8"
+                        android:paddingRight="@dimen/dip8"
+                        android:singleLine="true"
+                        android:text="0"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/lb_scantime_interval"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/lb_repeat_scantimes"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/scantime_interval"
+                        android:textColor="@color/black"
+                        android:textSize="18sp" />
+
+                    <EditText
+                        android:id="@+id/et_scantime_interval"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/lb_repeat_scantimes"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginLeft="@dimen/dip8"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/edittext_style"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
+                        android:paddingLeft="@dimen/dip8"
+                        android:paddingRight="@dimen/dip8"
+                        android:singleLine="true"
+                        android:text="0"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/tv_reportfilename"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/lb_scantime_interval"
+                        android:layout_marginTop="24dp"
+                        android:text="@string/report_filename"
+                        android:textAllCaps="false"
+                        android:textColor="@color/black"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/lb_prefix"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/tv_reportfilename"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/prefix"
+                        android:textColor="@color/black"
+                        android:textSize="18sp" />
+
+                    <EditText
+                        android:id="@+id/et_prefix"
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/tv_reportfilename"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginLeft="@dimen/dip8"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/edittext_style"
+                        android:imeOptions="actionDone"
+                        android:paddingLeft="@dimen/dip8"
+                        android:paddingRight="@dimen/dip8"
+                        android:singleLine="true"
+                        android:textSize="18sp" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/rl_devicesetting"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/ly_setting"
+                    android:layout_marginLeft="@dimen/dip32"
+                    android:visibility="gone">
+                    <TextView
+                        android:id="@+id/tv_devicecontrol"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:text="@string/device_control"
+                        android:textAllCaps="false"
+                        android:textColor="@color/black"
+                        android:textSize="20sp"
+                        android:textStyle="bold"/>
+                    <TextView
+                        android:id="@+id/lb_warmup"
+                        android:layout_below="@id/tv_devicecontrol"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/warmup"
+                        android:textColor="@color/black"
+                        android:textSize="18sp"
+                        android:layout_marginTop="12dp"/>
+                    <Button
+                        android:id="@+id/bt_excutewarmup"
+                        android:layout_below="@+id/tv_devicecontrol"
+                        android:layout_width="80dp"
+                        android:layout_height="26dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginLeft="@dimen/dip8"
+                        android:paddingLeft="@dimen/dip8"
+                        android:paddingRight="@dimen/dip8"
+                        android:background="@drawable/button_style"
+                        android:text="@string/excute"
+                        android:textColor="@color/royalblue"
+                        android:textSize="14sp"/>
+                    <TextView
+                        android:id="@+id/lb_lampmode"
+                        android:layout_below="@id/lb_warmup"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/lamp_mode"
+                        android:textColor="@color/black"
+                        android:textSize="18sp"
+                        android:layout_marginTop="12dp"/>
+
+                    <LinearLayout
+                        android:id="@+id/ly_lampmode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_gravity="center"
+                        android:layout_below="@+id/lb_warmup"
+                        android:layout_toRightOf="@id/lb_lampmode"
+                        android:layout_marginTop="12dp"
+                        android:paddingLeft="@dimen/dip8">
+                        <Button
+                            android:id="@+id/btn_auto"
+                            android:layout_width="80dp"
+                            android:layout_height="26dp"
+                            android:layout_weight="0.25"
+                            android:background="@drawable/button_style_skyblue"
+                            android:text="@string/auto"
+                            android:textColor="@color/black"
+                            android:textAllCaps="false"
+                            android:textSize="14sp"/>
+
+                        <Button
+                            android:id="@+id/btn_on"
+                            android:layout_width="80dp"
+                            android:layout_height="26dp"
+                            android:layout_weight="0.25"
+                            android:background="@drawable/button_style_skyblue"
+                            android:text="@string/on"
+                            android:textColor="@color/black"
+                            android:textAllCaps="false"
+                            android:textSize="14sp"/>
+                        <Button
+                            android:id="@+id/btn_off"
+                            android:layout_width="80dp"
+                            android:layout_height="26dp"
+                            android:layout_weight="0.25"
+                            android:background="@drawable/button_style_skyblue"
+                            android:text="@string/off"
+                            android:textColor="@color/black"
+                            android:textAllCaps="false"
+                            android:textSize="14sp"/>
+                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/lb_lampstabletime"
+                        android:layout_below="@id/lb_lampmode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/lamp_time"
+                        android:textColor="@color/black"
+                        android:textSize="18sp"
+                        android:layout_marginTop="12dp"/>
+                    <EditText
+                        android:id="@+id/et_lampstabletime"
+                        android:layout_below="@+id/lb_lampmode"
+                        android:layout_width="70dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginLeft="@dimen/dip8"
+                        android:paddingLeft="@dimen/dip8"
+                        android:paddingRight="@dimen/dip8"
+                        android:background="@drawable/edittext_style"
+                        android:singleLine="true"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
+                        android:text="625"
+                        android:textSize="18sp"/>
+                    <TextView
+                        android:id="@+id/lb_pga"
+                        android:layout_below="@id/lb_lampstabletime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/pga"
+                        android:textColor="@color/black"
+                        android:textSize="18sp"
+                        android:layout_marginTop="12dp"/>
+                    <Spinner
+                        android:id="@+id/spinner_pga"
+                        android:layout_below="@+id/lb_lampstabletime"
+                        android:layout_width="120dp"
+                        android:layout_height="28dp"
+                        android:layout_marginTop="12dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginLeft="@dimen/dip8"
+                        android:background="@drawable/edittext_style"
+                        android:textSize="18sp"/>
+                </RelativeLayout>
+
+            </RelativeLayout>
+        </ScrollView>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true">
+        <Button
+            android:id="@+id/led_connect"
+            android:layout_width="85dp"
+            android:layout_height="wrap_content"
+            android:background="#00000000"
+            android:drawableLeft="@drawable/led_g"
+            android:paddingBottom="5dp"
+            android:paddingLeft="5dp"
+            android:layout_alignParentBottom="true"
+            android:text="Connect"
+            android:textAllCaps="false"
+            android:textColor="#000000"
+            android:textSize="14sp">
+        </Button>
+
+        <Button
+            android:id="@+id/led_ble"
+            android:layout_width="55dp"
+            android:layout_height="wrap_content"
+            android:background="#00000000"
+            android:drawableLeft="@drawable/led_b"
+            android:paddingBottom="5dp"
+            android:layout_alignParentBottom="true"
+            android:layout_toRightOf="@+id/led_connect"
+            android:text="BLE"
+            android:textAllCaps="false"
+            android:textColor="#000000"
+            android:textSize="14sp">
+        </Button>
+
+        <Button
+            android:id="@+id/led_scan"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:background="#00000000"
+            android:drawableLeft="@drawable/leg_gray"
+            android:paddingBottom="5dp"
+            android:layout_alignParentBottom="true"
+            android:layout_toRightOf="@+id/led_ble"
+            android:text="Scan"
+            android:textAllCaps="false"
+            android:textColor="#000000"
+            android:textSize="14sp">
+        </Button>
+        <Button
+            android:id="@+id/led_error"
+            android:layout_width="65dp"
+            android:layout_height="wrap_content"
+            android:background="#00000000"
+            android:drawableLeft="@drawable/leg_gray"
+            android:paddingBottom="5dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:text="Error"
+            android:textAllCaps="false"
+            android:textColor="#000000"
+            android:textSize="14sp">
+        </Button>
+    </RelativeLayout>
+
+</LinearLayout>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:id="@+id/layout2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+        <ImageView
+            android:id="@+id/image"
+            android:layout_width="17dp"
+            android:layout_height="17dp"
+            android:src="@drawable/ic_action_info"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="5dp"/>
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_toRightOf="@id/image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dip16"
+            android:layout_marginLeft="@dimen/dip16"
+            android:layout_marginRight="130dp"
+            android:textColor="@color/black"
+            android:layout_centerVertical="true"
+            android:textSize="14sp"
+            android:text="Large TextAAAAAAAAAAAAAAAAAAAAAAAAAAAA" />
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="100days24hr59min55sec"
+            android:layout_marginTop="@dimen/dip16"
+            android:layout_marginRight="@dimen/dip8"
+            android:layout_marginLeft="200dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:textColor="@color/black"
+            android:textSize="12sp" />
+    </RelativeLayout>
+
+</LinearLayout>

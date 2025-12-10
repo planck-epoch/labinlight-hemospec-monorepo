@@ -1,0 +1,7 @@
+PyQt5
+PyQt5-sip
+pyqt5-tools
+pywin32-ctypes
+PyQtChart
+QtPy
+cx-Freeze

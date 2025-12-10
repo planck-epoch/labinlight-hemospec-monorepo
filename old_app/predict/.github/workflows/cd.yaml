@@ -1,0 +1,41 @@
+name: CD
+on:
+  push:
+    branches:
+      - dev
+    tags:
+      - v[0-9]+\.[0-9]+\.[0-9]+
+jobs:
+  ci:
+    if: ${{ github.ref == 'refs/heads/dev' }}
+    uses: ./.github/workflows/common.yaml
+  cd:
+    runs-on: ubuntu-latest
+    needs: ci
+    if: ${{ always() && !failure() && !cancelled() }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: azure/docker-login@v2
+        with:
+          login-server: 'datainlight.azurecr.io'
+          username: '${{ secrets.CR_USERNAME }}'
+          password: '${{ secrets.CR_PASSWORD }}'
+      - name: Build image
+        run: |
+          docker build --platform linux/amd64 -t datainlight.azurecr.io/lil/predict:${{ github.ref_name }} . 
+          docker push datainlight.azurecr.io/lil/predict:${{ github.ref_name }}
+
+      - name: Set up kubectl
+        if: github.ref == 'refs/heads/dev'
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "latest"
+      - name: Authenticate with Kubernetes
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          kubectl config set-cluster my-cluster --server=${{ secrets.DEV_KUBE_SERVER }}
+          kubectl config set clusters.my-cluster.certificate-authority-data "${{ secrets.DEV_CA_CERT }}"
+          kubectl config set-credentials gh --token="${{ secrets.DEV_CREDENTIALS }}"
+          kubectl config set-context my-cluster  --cluster=my-cluster  --user=gh --namespace=lil
+          kubectl config use-context my-cluster
+          kubectl rollout restart deployment/predict -n lil

@@ -1,0 +1,117 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:id="@+id/layout_main">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:background="@color/white">
+
+        <ScrollView
+            android:id="@+id/scrollview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RelativeLayout
+                android:id="@+id/tmall"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <CheckBox
+                    android:id="@+id/cb_warmupdetect"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:checked="true"
+                    android:text="@string/warmup_detect"
+                    android:textColor="@color/black"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/lb_warmupmin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/cb_warmupdetect"
+                    android:layout_marginLeft="6dp"
+                    android:layout_marginTop="15dp"
+                    android:text="@string/warmup_min"
+                    android:textColor="@color/black"
+                    android:textSize="18sp" />
+
+                <Spinner
+                    android:id="@+id/spinner_warmuptime"
+                    android:layout_width="100dp"
+                    android:layout_height="25dp"
+                    android:layout_below="@+id/cb_warmupdetect"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginLeft="@dimen/dip8"
+                    android:layout_marginTop="15dp"
+                    android:background="@drawable/edittext_style"
+                    android:textSize="18sp" />
+
+                <FrameLayout
+                    android:id="@+id/ly_warmup"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="150dp">
+
+                    <ProgressBar
+                        android:id="@+id/progress_warmup"
+                        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                        android:layout_width="250dp"
+                        android:layout_height="250dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/circle_shape"
+                        android:indeterminate="false"
+                        android:progress="0"
+                        android:progressDrawable="@drawable/circular" />
+
+                    <TextView
+                        android:id="@+id/tv_warmupstatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="@string/zero"
+                        android:textAlignment="center"
+                        android:textColor="#FF0000"
+                        android:textSize="60sp"
+                        android:textStyle="bold" />
+                </FrameLayout>
+
+                <Button
+                    android:id="@+id/bt_warmup_start"
+                    android:layout_width="wrap_content"
+                    android:layout_height="30dp"
+                    android:layout_below="@id/ly_warmup"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="32dp"
+                    android:background="@drawable/button_style"
+                    android:text="@string/start"
+                    android:textAllCaps="false"
+                    android:textColor="@color/royalblue"
+                    android:textSize="18sp" />
+
+            </RelativeLayout>
+        </ScrollView>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tv_lastwarmuptime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/bt_warmup_start"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="16dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/lastwarmuptime"
+        android:textAllCaps="false"
+        android:textColor="@color/black"
+        android:textSize="12sp" />
+</LinearLayout>

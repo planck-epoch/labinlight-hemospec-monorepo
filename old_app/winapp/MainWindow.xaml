@@ -1,0 +1,564 @@
+﻿<Window x:Class="LabinLightScan.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:gif="http://wpfanimatedgif.codeplex.com" 
+        xmlns:local="clr-namespace:LabinLightScan" xmlns:rules="clr-namespace:LabinLightScan.validators"
+        mc:Ignorable="d"
+        Loaded="LoadHandler" WindowStartupLocation="CenterScreen"  Width="1024" Height="768">
+    <Window.Resources>
+		<XmlDataProvider x:Key="CountriesData" Source="Resources/Countries.xml" XPath="Countries" />
+		<XmlDataProvider x:Key="AnalysisTypesData" Source="Resources/AnalysisTypes.xml" XPath="AnalysisTypes" />
+
+		
+
+		<ControlTemplate x:Key="validationTemplate">
+            <DockPanel Margin="0">
+                <TextBlock DockPanel.Dock="Right" Margin="5,0" Foreground="#999" FontSize="20" 
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Left"
+                           FontWeight="Bold" Text="*"/>
+
+                <AdornedElementPlaceholder/>
+            </DockPanel>
+        </ControlTemplate>
+        <Style x:Key="TransparentStyle" TargetType="{x:Type Button}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border>
+                            <Border.Style>
+                                <Style TargetType="{x:Type Border}">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Grid Background="Transparent">
+                                <ContentPresenter></ContentPresenter>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="overlayBackground" TargetType="Border">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush Opacity="0.7" EndPoint="0,0" StartPoint="28,38" 
+                         MappingMode="Absolute" SpreadMethod="Pad">
+                        <GradientStop Color="#888"  Offset="0" />
+                        <GradientStop Color="#888" Offset="1" />
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="FocusVisual">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="2" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <SolidColorBrush x:Key="RadioButton.Static.Background" Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="RadioButton.Static.Border" Color="#FF707070"/>
+        <Style x:Key="OptionMarkFocusVisual">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="14,0,0,0" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <SolidColorBrush x:Key="RadioButton.MouseOver.Background" Color="#FFF3F9FF"/>
+        <SolidColorBrush x:Key="RadioButton.MouseOver.Border" Color="#FF5593FF"/>
+        <SolidColorBrush x:Key="RadioButton.MouseOver.Glyph" Color="#FF212121"/>
+        <SolidColorBrush x:Key="RadioButton.Disabled.Background" Color="#FFE6E6E6"/>
+        <SolidColorBrush x:Key="RadioButton.Disabled.Border" Color="#FFBCBCBC"/>
+        <SolidColorBrush x:Key="RadioButton.Disabled.Glyph" Color="#FF707070"/>
+        <SolidColorBrush x:Key="RadioButton.Pressed.Background" Color="#FFD9ECFF"/>
+        <SolidColorBrush x:Key="RadioButton.Pressed.Border" Color="#FF3C77DD"/>
+        <SolidColorBrush x:Key="RadioButton.Pressed.Glyph" Color="#FF212121"/>
+        <SolidColorBrush x:Key="RadioButton.Static.Glyph" Color="#FF212121"/>
+        <Style x:Key="RadioButtonStyle1" TargetType="{x:Type RadioButton}">
+            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
+            <Setter Property="Background" Value="{StaticResource RadioButton.Static.Background}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource RadioButton.Static.Border}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type RadioButton}">
+                        <Grid x:Name="templateRoot" Background="Transparent" SnapsToDevicePixels="True">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="radioButtonBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="100" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="1,1,2,1" VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                                <Grid x:Name="markGrid" Margin="2">
+                                    <Ellipse x:Name="optionMark" Fill="{StaticResource RadioButton.Static.Glyph}" MinWidth="20" MinHeight="20" Opacity="0"/>
+                                </Grid>
+                            </Border>
+                            <ContentPresenter x:Name="contentPresenter" Grid.Column="1" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="HasContent" Value="true">
+                                <Setter Property="FocusVisualStyle" Value="{StaticResource OptionMarkFocusVisual}"/>
+                                <Setter Property="Padding" Value="4,-1,0,0"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.MouseOver.Background}"/>
+                                <Setter Property="BorderBrush" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.MouseOver.Border}"/>
+                                <Setter Property="Fill" TargetName="optionMark" Value="{StaticResource RadioButton.MouseOver.Glyph}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Background" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.Disabled.Background}"/>
+                                <Setter Property="BorderBrush" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.Disabled.Border}"/>
+                                <Setter Property="Fill" TargetName="optionMark" Value="{StaticResource RadioButton.Disabled.Glyph}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Background" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.Pressed.Background}"/>
+                                <Setter Property="BorderBrush" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.Pressed.Border}"/>
+                                <Setter Property="Fill" TargetName="optionMark" Value="{StaticResource RadioButton.Pressed.Glyph}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="true">
+                                <Setter Property="Opacity" TargetName="optionMark" Value="1"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="{x:Null}">
+                                <Setter Property="Opacity" TargetName="optionMark" Value="0.56"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="RadioButtonStyle2" TargetType="{x:Type RadioButton}">
+            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
+            <Setter Property="Background" Value="{StaticResource RadioButton.Static.Background}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource RadioButton.Static.Border}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type RadioButton}">
+                        <Grid x:Name="templateRoot" Background="Transparent" SnapsToDevicePixels="True">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="radioButtonBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="100" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="1,1,2,1" VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                                <Grid x:Name="markGrid" Margin="2">
+                                    <Ellipse x:Name="optionMark" Fill="{StaticResource RadioButton.Static.Glyph}" MinWidth="20" MinHeight="20" Opacity="0"/>
+                                </Grid>
+                            </Border>
+                            <ContentPresenter x:Name="contentPresenter" Grid.Column="1" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="HasContent" Value="true">
+                                <Setter Property="FocusVisualStyle" Value="{StaticResource OptionMarkFocusVisual}"/>
+                                <Setter Property="Padding" Value="4,-1,0,0"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.MouseOver.Background}"/>
+                                <Setter Property="BorderBrush" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.MouseOver.Border}"/>
+                                <Setter Property="Fill" TargetName="optionMark" Value="{StaticResource RadioButton.MouseOver.Glyph}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Background" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.Disabled.Background}"/>
+                                <Setter Property="BorderBrush" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.Disabled.Border}"/>
+                                <Setter Property="Fill" TargetName="optionMark" Value="{StaticResource RadioButton.Disabled.Glyph}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Background" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.Pressed.Background}"/>
+                                <Setter Property="BorderBrush" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.Pressed.Border}"/>
+                                <Setter Property="Fill" TargetName="optionMark" Value="{StaticResource RadioButton.Pressed.Glyph}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="true">
+                                <Setter Property="Opacity" TargetName="optionMark" Value="1"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="{x:Null}">
+                                <Setter Property="Opacity" TargetName="optionMark" Value="0.56"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid Margin="0">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="240"/>
+            <RowDefinition Height="2"/>
+            <RowDefinition Height="100*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+
+        <Grid Grid.Row="2" Margin="0,8" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="80"/>
+                <RowDefinition Height="80"/>
+                <RowDefinition Height="80"/>
+                <RowDefinition Height="80"/>
+                <RowDefinition Height="80*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Grid.Row="0" BorderBrush="#999"  BorderThickness="1" Margin="8" Opacity="1">
+                <Grid Margin="18,8,8,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="70"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock TextWrapping="Wrap" Text="①" TextAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                               FontSize="28"/>
+                    <TextBlock Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Massajar o dedo e executar punção capilar para obter uma gota de sangue."
+                               TextAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="20" Grid.Column="1"/>
+
+                </Grid>
+            </Border>
+            <Border Grid.Column="0" Grid.Row="1" BorderBrush="#999"  BorderThickness="1" Margin="8" Opacity="1">
+                <Grid Margin="18,8,8,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="50"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock TextWrapping="Wrap" Text="②" TextAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center"
+                               FontSize="28"/>
+                    <TextBlock TextWrapping="Wrap" Text="Aproximar o cartucho à gota de sangue até que o tubo esteja totalmente preenchido."
+                               TextAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="20" Grid.Column="1"/>
+                    <Button  Style="{StaticResource TransparentStyle}" Click="open_Help2Popup" Name="Help2" Grid.Column="2" Background="{x:Null}" BorderBrush="{x:Null}">
+                        <Image Width="32" HorizontalAlignment="Center" VerticalAlignment="Center"  Source="images/help.png">
+
+                        </Image>
+                    </Button>
+                    
+                    <Popup Name="Help2Popup"
+                           StaysOpen="False"
+                       PlacementTarget="{Binding ElementName=Help2}"              
+                       AllowsTransparency="True"  
+                       PopupAnimation="Fade"  
+                       HorizontalOffset="-50"  
+                       VerticalOffset="-165">
+                        <Image Height="128"  gif:ImageBehavior.AnimatedSource="images/cartridge_1_0_A4 v1 01.gif" />
+                    </Popup>
+                </Grid>
+               
+            </Border>
+            <Border Grid.Column="0" Grid.Row="2" BorderBrush="#999" BorderThickness="1" Margin="8" Opacity="1">
+                <Grid Margin="18,8,8,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="50"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock TextWrapping="Wrap" Text="③" TextAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center"
+                               FontSize="28"/>
+                    <TextBlock TextWrapping="Wrap" Text="Voltar o cartucho para cima de forma a que o sangue preencha a totalidade da região de análise."
+                               TextAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="20" Grid.Column="1"/>
+                    <Button  Style="{StaticResource TransparentStyle}" Click="open_Help3Popup" Name="Help3" Grid.Column="2" Background="{x:Null}" BorderBrush="{x:Null}">
+                        <Image Width="32" HorizontalAlignment="Center" VerticalAlignment="Center"  Source="images/help.png">
+
+                        </Image>
+                    </Button>
+
+                    <Popup Name="Help3Popup"
+                           StaysOpen="False"
+                       PlacementTarget="{Binding ElementName=Help3}"              
+                       AllowsTransparency="True"  
+                       PopupAnimation="Fade" 
+                       HorizontalOffset="-50"  
+                       VerticalOffset="-165">
+                        <Image Height="128"  Source="images/cartridge_1_0_A4 v1 03.png" />
+                    </Popup>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="0" Grid.Row="3" BorderBrush="#999" BorderThickness="1" Margin="8" Opacity="1">
+                <Grid Margin="18,8,8,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="50"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock TextWrapping="Wrap" Text="④" TextAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center"
+                               FontSize="28"/>
+                    <TextBlock TextWrapping="Wrap" Text="Inserir o cartucho no Hemospec e clicar no botão analisar."
+                               TextAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="20" Grid.Column="1"/>
+                    <Button  Style="{StaticResource TransparentStyle}" Click="open_Help4Popup" Name="Help4" Grid.Column="2" Background="{x:Null}" BorderBrush="{x:Null}">
+                        <Image Width="32" HorizontalAlignment="Center" VerticalAlignment="Center"  Source="images/help.png">
+
+                        </Image>
+                    </Button>
+
+                    <Popup Name="Help4Popup"
+                           StaysOpen="False"
+                       PlacementTarget="{Binding ElementName=Help4}"              
+                       AllowsTransparency="True"  
+                       PopupAnimation="Fade"  
+                       HorizontalOffset="-50"  
+                       VerticalOffset="-165">
+                        <Image Height="128"  Source="images/cartridge_1_0_A4 v1 04.png" />
+                    </Popup>
+                </Grid>
+            </Border>
+
+            <Button x:Name="BStart" Grid.Column="0"  Margin="8" Grid.Row="4" VerticalAlignment="Bottom" Content="Analisar"  Height="40" IsEnabled="False" Click="BStart_Click" FontSize="20"/>
+
+        </Grid>
+
+
+
+        <StatusBar Grid.Row="3" Margin="5">
+            <Label Content="Servidor:" FontFamily="Verdana" FontSize="10"/>
+            <Image x:Name="Image_ServerStatusIcon" ToolTip="Ligação c/ Servidor" Stretch="Fill" Width="16" Height="16"/>
+            <Separator HorizontalAlignment="Left" />
+            <Label Content="Hemospec:" FontFamily="Verdana" FontSize="10"/>
+            <Image x:Name="Image_DeviceStatusIcon" ToolTip="Ligação c/ Hemospec" Stretch="Fill" Width="16" Height="16"/>
+            <Separator HorizontalAlignment="Left" />
+            <StatusBarItem x:Name="StatusBarItem_DeviceStatus" ScrollViewer.VerticalScrollBarVisibility="Disabled" 
+                           Content="Hemospec desconectado." Margin="0,0,0,0" 
+                           VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="Verdana" FontSize="10"/>
+            <StatusBarItem x:Name="StatusBarItem_ServerStatus" ScrollViewer.VerticalScrollBarVisibility="Disabled" 
+                           Content="" Margin="0,0,0,0" 
+                           VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="Verdana" FontSize="10"/>
+            <StatusBarItem x:Name="StatusBarItem_ErrorStatus" ScrollViewer.VerticalScrollBarVisibility="Auto" FontFamily="Verdana" FontSize="10" Foreground="Red" />
+        </StatusBar>
+
+        <Border x:Name="BorderResults" BorderBrush="#999"  BorderThickness="0"
+                Margin="50,0,50,0"
+                Background="White" Opacity="0" OpacityMask="Black" Grid.RowSpan="1" 
+                Grid.Row="2" >
+            <Border.RenderTransform>
+                <TranslateTransform x:Name="borderResultsTransform" Y="-800" />
+            </Border.RenderTransform>
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="20" Direction="90" Color="#555" />
+            </Border.Effect>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="50"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock  Text="Resultados"  
+                            HorizontalAlignment="Center" 
+                            Grid.Row="0" Margin="0,5" 
+                            VerticalAlignment="Top" 
+                            FontFamily="Verdana"
+                            FontSize="22" />
+                <StackPanel Orientation="Vertical" Grid.Row="1">
+                    <Canvas HorizontalAlignment="Left" Width="0" ClipToBounds="False">
+                        <Line Stroke="Black" StrokeDashArray="4 4" X2="{Binding ActualWidth, Mode=OneWay, 
+              RelativeSource={RelativeSource FindAncestor,
+              AncestorType={x:Type Border}}}"/>
+                    </Canvas>
+                </StackPanel>
+                <Grid  x:Name="resResults"  Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Top">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="50"/>
+                        <ColumnDefinition Width="200"/>
+                    </Grid.ColumnDefinitions>
+                </Grid>
+
+
+                <StackPanel Orientation="Vertical" Grid.Row="3">
+                    <Canvas HorizontalAlignment="Left" Width="0" ClipToBounds="False">
+                        <Line Stroke="Black" StrokeDashArray="4 4" X2="{Binding ActualWidth, Mode=OneWay, 
+              RelativeSource={RelativeSource FindAncestor,
+              AncestorType={x:Type Border}}}"/>
+                    </Canvas>
+                </StackPanel>
+
+                <Button x:Name="Continuar" Grid.Row="4" Content="OK" 
+                        VerticalAlignment="Center" Height="35" Width="100" Margin="16,0,16,0" IsEnabled="True" 
+                        Click="BContinuar_Click" FontSize="20"/>
+
+            </Grid>
+        </Border>
+        <Grid Grid.Row="0"  x:Name="GridPersonalData" HorizontalAlignment="Stretch" Width="Auto" Margin="20,0,15,0" Background="White">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="50"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition MinWidth="90" Width="*"/>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition MinWidth="90" Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Label  Grid.Row="0" Grid.Column="0" Content="Tipo de Análise:" HorizontalAlignment="Left" VerticalAlignment="Center"  FontWeight="Bold" FontSize="18"/>
+            <ComboBox  Grid.Row="0" Grid.Column="1" x:Name="DropdownAnalsysisType" 
+                       SelectionChanged="formInputChanged"
+                       Width="280"  HorizontalAlignment="Left"  VerticalAlignment="Center" FontSize="16"
+                       Validation.ErrorTemplate="{StaticResource validationTemplate}"
+                        SelectedValuePath="Value"
+                        DisplayMemberPath="Name"
+                        ItemsSource="{Binding AnalysisTypesList}"
+					  >
+             
+
+				<ComboBox.SelectedValue>
+					
+                    <Binding Path="selectedAnalysisBundle" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <rules:RequiredRule ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+					
+                </ComboBox.SelectedValue>
+
+
+
+            </ComboBox>
+
+            <Label Grid.Row="1" Grid.Column="0" Content="Nr Processo:" HorizontalAlignment="Left" VerticalAlignment="Center" FontWeight="Bold" FontSize="18"/>
+            <TextBox Grid.Row="1"  Grid.Column="1"  x:Name="TbId" TextChanged="formInputChanged"  KeyDown="TbId_keydown"
+                     Width="280" HorizontalAlignment="Left" 
+                     TextWrapping="NoWrap" VerticalAlignment="Center" FontSize="18" TextAlignment="Right" 
+                     Validation.ErrorTemplate="{StaticResource validationTemplate}">
+                <Binding Path="processNbr" UpdateSourceTrigger="PropertyChanged"  Mode="TwoWay">
+                    <Binding.ValidationRules>
+                        <rules:RequiredRule ValidatesOnTargetUpdated="True" />
+                    </Binding.ValidationRules>
+                </Binding>
+
+            </TextBox>
+
+            <Label Grid.Row="2" Grid.Column="0" Content="Sexo:" HorizontalAlignment="Left" VerticalAlignment="Center" FontWeight="Bold" FontSize="18"/>
+            <ListView   Validation.ErrorTemplate="{StaticResource validationTemplate}"
+                        Grid.Row="2" Grid.Column="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        SelectedValuePath="Tag" BorderThickness="0" Margin="0" SelectionMode="Single"
+                        Width="280"
+                        HorizontalAlignment="Left">
+                <ListView.SelectedValue>
+                    <Binding Path="selectedGender" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                    </Binding>
+
+                </ListView.SelectedValue>
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"></StackPanel>
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="{x:Type ListViewItem}">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="Margin" Value="0,0,10,0" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                    <ContentPresenter />
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListView.ItemContainerStyle>
+
+                <RadioButton Checked="formInputChanged" x:Name="RbFemale"
+                             VerticalAlignment="Center" GroupName="Gender" FontSize="16" 
+                             VerticalContentAlignment="Center" Margin="0,0,0,5" 
+                             HorizontalAlignment="Left"
+                             Content="Feminino"
+                             Tag="F"
+                             IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=IsSelected}"
+                             Style="{DynamicResource RadioButtonStyle1}"
+                             Validation.ErrorTemplate="{StaticResource validationTemplate}"/>
+                <RadioButton Checked="formInputChanged" x:Name="RbMale"
+                             VerticalAlignment="Center" GroupName="Gender" FontSize="16" 
+                             VerticalContentAlignment="Center" Margin="0,0,0,5" 
+                             HorizontalAlignment="Left"
+                             Content="Masculino"
+                             Tag="M"
+                             IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=IsSelected}"
+                             Style="{DynamicResource RadioButtonStyle1}"
+                             Validation.ErrorTemplate="{StaticResource validationTemplate}"/>
+            </ListView>
+
+            <Label  Grid.Row="3" Grid.Column="0" Content="País / Nr Utente:" HorizontalAlignment="Left" VerticalAlignment="Center"  FontWeight="Bold" FontSize="18"/>
+            <StackPanel Orientation="Horizontal"  Grid.Row="3" Grid.Column="1" >
+                <ComboBox   x:Name="Country" SelectionChanged="formInputChanged"  Margin="0,0,10,0" Text="" Width="50"  HorizontalAlignment="Left" 
+                            VerticalAlignment="Center" FontSize="14" 
+                            SelectedValuePath="@Code" 
+                            DisplayMemberPath="@Code"
+                            ItemsSource="{Binding Source={StaticResource CountriesData}, XPath=./Country}">
+                    <ComboBox.SelectedValue>
+                        <Binding Path="selectedPatientIdCountry" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        </Binding>
+                    </ComboBox.SelectedValue>
+                </ComboBox>
+                <TextBox   x:Name="PatientId" TextChanged="formInputChanged" Width="220"  HorizontalAlignment="Left" 
+                           TextWrapping="Wrap" VerticalAlignment="Center" FontSize="18"  TextAlignment="Right">
+                    <Binding Path="patientId" UpdateSourceTrigger="PropertyChanged"  Mode="TwoWay">
+                    </Binding>
+                </TextBox>
+            </StackPanel>
+
+            <Label  Grid.Row="2" Grid.Column="2" Content="Ano de Nascimento:" HorizontalAlignment="Left" VerticalAlignment="Center"  FontWeight="Bold" FontSize="18"/>
+            <TextBox  Grid.Row="2" Grid.Column="3" x:Name="TextBoxBirthdayYear" TextChanged="formInputChanged" 
+                      TextAlignment="Right"
+                      PreviewTextInput="birthYearValidate" 
+                      Width="85" MaxLength="4"  HorizontalAlignment="Left" 
+                      TextWrapping="Wrap" VerticalAlignment="Center" FontSize="18" 
+                     Validation.ErrorTemplate="{StaticResource validationTemplate}">
+                <Binding Path="birthYear" 
+                 UpdateSourceTrigger="PropertyChanged"  Mode="TwoWay">
+                </Binding>
+            </TextBox>
+
+
+
+            <Label  Grid.Row="3" Grid.Column="2" Content="Contacto:" HorizontalAlignment="Left" 
+                    VerticalAlignment="Center"  FontWeight="Bold" FontSize="18"/>
+            <TextBox Grid.Row="3" Grid.Column="3"  PreviewTextInput="patientContactValidate" 
+                     x:Name="PatientContact" TextChanged="formInputChanged"  Width="205"  TextAlignment="Right"
+                     HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" FontSize="18">
+                <Binding Path="patientContact" UpdateSourceTrigger="PropertyChanged"  Mode="TwoWay">
+                </Binding>
+            </TextBox>
+
+
+            <Label Grid.Row="4" Grid.Column="3" Grid.ColumnSpan="2" Content="* Preenchimento obrigatório" FontSize="12" 
+                   VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
+        </Grid>
+        <Border  Grid.Row="1"  Background="White" BorderBrush="#333" Opacity="1"
+        BorderThickness="0.01" x:Name="FormSeparator">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10" Direction="270" Color="#333" />
+            </Border.Effect>
+        </Border>
+        <Border x:Name="BorderAnalisar" BorderBrush="#999"  BorderThickness="1"  Opacity="1" OpacityMask="Black" Grid.RowSpan="5" 
+                Visibility="Collapsed"
+                Style="{DynamicResource overlayBackground}">
+
+            <ProgressBar x:Name="progressBar1" Foreground="#f9855e" BorderBrush="#555" BorderThickness="1" Width="512" Height="64" Value="30" Opacity="1" HorizontalAlignment="Center" />
+        </Border>
+    </Grid>
+
+
+
+
+</Window>
