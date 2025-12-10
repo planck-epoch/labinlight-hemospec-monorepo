@@ -90,34 +90,34 @@ const Login: React.FC = () => {
           <div style={{ padding: '0 20px' }}>
               <div style={{ marginBottom: '20px' }}>
                   <div style={{ color: 'var(--ion-color-medium)', marginBottom: '5px', fontSize: '0.9rem' }}>Email</div>
-                  <IonItem lines="none" style={{ border: '1px solid var(--c-neutral-50)', borderRadius: '5px', '--padding-start': '10px', '--background': 'var(--c-neutral-100)' }}>
-                      <IonIcon icon={mailOutline} slot="start" color="medium" />
+                  <IonItem lines="none" style={{ border: '1px solid var(--c-neutral-50)', borderRadius: '5px', '--padding-start': '10px', '--background': 'var(--c-neutral-30)' }}>
+                      <IonIcon icon={mailOutline} slot="start" color="light" />
                       <IonInput
                         value={email}
                         onIonChange={e => setEmail(e.detail.value!)}
                         type="email"
                         placeholder="user@mail.example"
-                        style={{ '--background': 'transparent', '--color': 'var(--ion-color-dark)', '--placeholder-color': 'var(--ion-color-medium)' }}
+                        style={{ '--background': 'transparent', '--color': 'var(--c-neutral-100)', '--placeholder-color': 'var(--c-neutral-50)' }}
                       />
                   </IonItem>
               </div>
 
               <div style={{ marginBottom: '30px' }}>
                   <div style={{ color: 'var(--ion-color-medium)', marginBottom: '5px', fontSize: '0.9rem' }}>Password</div>
-                  <IonItem lines="none" style={{ border: '1px solid var(--c-neutral-50)', borderRadius: '5px', '--padding-start': '10px', '--background': 'var(--c-neutral-100)' }}>
-                      <IonIcon icon={lockClosedOutline} slot="start" color="medium" />
+                  <IonItem lines="none" style={{ border: '1px solid var(--c-neutral-50)', borderRadius: '5px', '--padding-start': '10px', '--background': 'var(--c-neutral-30)' }}>
+                      <IonIcon icon={lockClosedOutline} slot="start" color="light" />
                       <IonInput
                         value={password}
                         onIonChange={e => setPassword(e.detail.value!)}
                         type={showPassword ? 'text' : 'password'}
                         placeholder="password"
-                        style={{ '--background': 'transparent', '--color': 'var(--ion-color-dark)', '--placeholder-color': 'var(--ion-color-medium)' }}
+                        style={{ '--background': 'transparent', '--color': 'var(--c-neutral-100)', '--placeholder-color': 'var(--c-neutral-50)' }}
                       />
                       <IonIcon
                         icon={showPassword ? eyeOffOutline : eyeOutline}
                         slot="end"
                         onClick={() => setShowPassword(!showPassword)}
-                        color="medium"
+                        color="light"
                         style={{ cursor: 'pointer' }}
                       />
                   </IonItem>
