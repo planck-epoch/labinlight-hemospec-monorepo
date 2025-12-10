@@ -18,7 +18,7 @@ export interface HistoryItem {
 }
 
 class ApiService {
-    private baseUrl = 'http://localhost:3000';
+    private baseUrl = import.meta.env.VITE_LABINLIGHT_API_URL || 'https://www.labinlight.dev/api';
 
     private getHeaders(token?: string) {
         const headers: HeadersInit = {

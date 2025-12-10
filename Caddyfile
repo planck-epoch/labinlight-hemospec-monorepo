@@ -1,0 +1,17 @@
+labinlight.dev, www.labinlight.dev {
+    # Serve the React app files
+    root * /srv
+    encode gzip
+    try_files {path} /index.html
+    file_server
+
+    # Send API requests to the NestJS backend container
+    handle /api/* {
+        reverse_proxy api:3000
+    }
+}
+
+# Fallback for direct IP access (optional, helpful for testing)
+:80 {
+    respond "Please use https://www.labinlight.dev"
+}

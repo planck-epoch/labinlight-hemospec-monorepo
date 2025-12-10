@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # Database
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: hemospec_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Prediction Engine (Python)
+  predict:
+    build: ./old_app/predict
+    restart: always
+    ports:
+      - "8080:8080"
+
+  # Backend API (NestJS)
+  api:
+    build: ./hemospec-api
+    restart: always
+    depends_on:
+      - postgres
+      - predict
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: user
+      DATABASE_PASSWORD: password
+      DATABASE_NAME: hemospec_db
+      PREDICTION_SERVICE_URL: "http://predict:8080/analyze"
+      # Set to 'false' to use the Python service, 'true' for mock data
+      SIMULATION_MODE: "false"
+      PORT: 3000
+      PATIENT_ID_HASH_SECRET: "change-me-to-something-secure"
+
+  # Web Server (Caddy)
+  caddy:
+    image: caddy:2-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./hemospec-app/dist:/srv
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
