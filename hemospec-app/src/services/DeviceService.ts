@@ -82,8 +82,9 @@ class DeviceService {
                 'android.permission.BLUETOOTH_SCAN',
                 'android.permission.BLUETOOTH_CONNECT'
             ];
-
+            console.log('Requesting permissions:', permissionsToRequest);
             const response = await androidPermissions.requestPermissions(permissionsToRequest);
+            console.log('Permission response:', response);
             return response.hasPermission;
         } catch (error) {
             console.error('Error requesting permissions:', error);

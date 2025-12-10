@@ -55,7 +55,7 @@
 
     <!-- Location Permissions (Needed for BLE on Android < 12) -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" tools:node="replace" />
 
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
 </manifest>
