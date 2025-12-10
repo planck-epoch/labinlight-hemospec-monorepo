@@ -59,6 +59,7 @@ class DeviceService {
     private connectedDeviceAddress: string | null = null;
     private discoveredDevices: BleDevice[] = [];
     private pendingScanResolve: ((value: any) => void) | null = null;
+    private pendingConnectionResolve: ((value: void | PromiseLike<void>) => void) | null = null;
 
     constructor() {
         this.initListeners();
@@ -149,7 +150,12 @@ class DeviceService {
              console.log('SDK Event:', data.event);
              if (data.event === 'NOTIFY_COMPLETE') {
                  this.updateStatus({ connected: true });
-                 // If we were waiting for scan data, fetch it now
+
+                 if (this.pendingConnectionResolve) {
+                     this.pendingConnectionResolve();
+                     this.pendingConnectionResolve = null;
+                 }
+             } else if (data.event === 'SCAN_DATA_READY') {
                  if (this.pendingScanResolve) {
                      try {
                          const scanData = await MetaScan.getScanData();
@@ -195,6 +201,18 @@ class DeviceService {
         try {
             await MetaScan.connect({ address });
             this.connectedDeviceAddress = address;
+
+            // Wait for NOTIFY_COMPLETE event which indicates services are ready
+            await new Promise<void>((resolve, reject) => {
+                this.pendingConnectionResolve = resolve;
+                setTimeout(() => {
+                    if (this.pendingConnectionResolve) {
+                        this.pendingConnectionResolve = null;
+                        reject(new Error("Connection initialization timed out"));
+                    }
+                }, 10000);
+            });
+
             this.updateStatus({ connected: true });
             try {
                 const status = await MetaScan.getDeviceStatus();

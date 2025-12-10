@@ -5,12 +5,13 @@ import {
   IonSegment, IonSegmentButton, IonGrid, IonRow, IonCol, IonText, IonFooter
 } from '@ionic/react';
 import { arrowBackOutline, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { apiService } from '../services/ApiService';
 import { deviceService } from '../services/DeviceService';
 
 const AnalysisPage: React.FC = () => {
     const history = useHistory();
+    const location = useLocation<any>();
 
     // Steps: 'patient-form' -> 'scanning' -> 'analyzing' -> 'complete'
     const [step, setStep] = useState<'patient-form' | 'scanning' | 'analyzing' | 'complete'>('patient-form');
@@ -27,6 +28,12 @@ const AnalysisPage: React.FC = () => {
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     // Step 1: Patient Form Handlers
+    useEffect(() => {
+        if (location.state && location.state.patientId) {
+            setPatientId(location.state.patientId);
+        }
+    }, [location]);
+
     const handleStart = () => {
         if (!patientId || !age) {
             setErrorMsg("Please fill in all fields");
@@ -108,11 +115,10 @@ const AnalysisPage: React.FC = () => {
 
             try {
                 // Construct Payload
-                const payload = deviceService.constructPayload(scanData, {
-                    patientId,
-                    age: parseInt(age),
-                    gender: sex
-                });
+                const payload = {
+                    patientId: patientId,
+                    sensorData: deviceService.formatScanData(scanData)
+                };
 
                 // Call API
                 console.log("Sending payload:", payload);
