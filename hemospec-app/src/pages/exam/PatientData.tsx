@@ -43,7 +43,7 @@ const PatientData: React.FC = () => {
         </IonItem>
 
         <div className="ion-margin-top">
-            <IonButton expand="block" disabled={!isValid} onClick={() => history.push('/app/exam/connect')}>
+            <IonButton expand="block" disabled={!isValid} onClick={() => history.push('/app/exam/connect', { patientId, age })}>
                 Continue
             </IonButton>
         </div>

@@ -149,7 +149,18 @@ class DeviceService {
              console.log('SDK Event:', data.event);
              if (data.event === 'NOTIFY_COMPLETE') {
                  this.updateStatus({ connected: true });
-                 // If we were waiting for scan data, fetch it now
+                 try {
+                     const status = await MetaScan.getDeviceStatus();
+                     this.updateStatus({
+                         batteryLevel: status.battery,
+                         temperature: status.temp,
+                         serialNumber: status.serial
+                     });
+                 } catch(e) {
+                     console.warn("Could not fetch device status on notify complete", e);
+                 }
+             } else if (data.event === 'SCAN_DATA_READY') {
+                 // Scan data is ready to be fetched
                  if (this.pendingScanResolve) {
                      try {
                          const scanData = await MetaScan.getScanData();
@@ -195,17 +206,8 @@ class DeviceService {
         try {
             await MetaScan.connect({ address });
             this.connectedDeviceAddress = address;
-            this.updateStatus({ connected: true });
-            try {
-                const status = await MetaScan.getDeviceStatus();
-                this.updateStatus({
-                    batteryLevel: status.battery,
-                    temperature: status.temp,
-                    serialNumber: status.serial
-                });
-            } catch(e) {
-                console.warn("Could not fetch device status on connect", e);
-            }
+            // Removed immediate status update and getDeviceStatus
+            // Waiting for NOTIFY_COMPLETE event
             return true;
         } catch (e) {
             console.error("Connection failed", e);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonProgressBar, IonText, IonButton, IonIcon } from '@ionic/react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { bluetooth } from 'ionicons/icons';
 import { deviceService } from '../../services/DeviceService';
 import { apiService } from '../../services/ApiService';
@@ -8,6 +8,7 @@ import './Exam.css';
 
 const Analysis: React.FC = () => {
   const history = useHistory();
+  const location = useLocation<{ patientId?: string }>();
   const [status, setStatus] = useState('Initializing...');
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -34,12 +35,18 @@ const Analysis: React.FC = () => {
       setProgress(0.6);
 
       // Format the data using the template to match backend DTO
-      const payload = deviceService.formatScanData(scanResult);
+      const sensorData = deviceService.formatScanData(scanResult);
 
       setStatus('Analyzing Sample...');
 
+      const patientId = location.state?.patientId || "UNKNOWN_PATIENT";
+      const apiPayload = {
+          patientId,
+          sensorData
+      };
+
       // Send to API
-      const response = await apiService.analyze(payload);
+      const response = await apiService.analyze(apiPayload);
 
       setStatus('Analysis complete');
       setProgress(1.0);

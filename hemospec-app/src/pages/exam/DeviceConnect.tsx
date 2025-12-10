@@ -1,13 +1,14 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton, IonIcon, IonText, IonSpinner, IonButtons, IonBackButton } from '@ionic/react';
 import { bluetoothOutline, checkmarkCircleOutline, alertCircleOutline, flaskOutline } from 'ionicons/icons';
 import { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { deviceService, DeviceStatus } from '../../services/DeviceService';
 import { apiService } from '../../services/ApiService';
 import { ANALYSIS_PAYLOAD_TEMPLATE } from '../../services/payloadTemplate';
 
 const DeviceConnect: React.FC = () => {
   const history = useHistory();
+  const location = useLocation<{ patientId?: string; age?: string }>();
   const [status, setStatus] = useState<DeviceStatus>({ connected: false, batteryLevel: 0, isScanning: false, cartridgeInserted: false });
   const [error, setError] = useState('');
   const [isSimulating, setIsSimulating] = useState(false);
@@ -31,7 +32,7 @@ const DeviceConnect: React.FC = () => {
   };
 
   const startAnalysis = () => {
-      history.push('/app/exam/analysis');
+      history.push('/app/exam/analysis', location.state);
   };
 
   const handleSimulate = async () => {
