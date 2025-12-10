@@ -17,7 +17,7 @@ export interface HistoryItem {
 }
 
 class ApiService {
-    private baseUrl = 'http://labinlight.dev:3000/api';
+    private baseUrl = 'https://labinlight.dev/api';
     private accessToken: string | null = null;
 
     public setToken(token: string | null) {

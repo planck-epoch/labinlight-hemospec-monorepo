@@ -2,11 +2,13 @@ import { IonContent, IonPage, IonInput, IonButton, IonItem, IonIcon, IonText, Io
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { authService } from '../services/AuthService';
-import { mailOutline, lockClosedOutline, eyeOutline, eyeOffOutline, globeOutline } from 'ionicons/icons';
+import { mailOutline, lockClosedOutline, eyeOutline, eyeOffOutline, globeOutline, bugOutline } from 'ionicons/icons';
+import DebugConsoleModal from '../components/DebugConsoleModal';
 
 const Login: React.FC = () => {
   const history = useHistory();
   const [viewState, setViewState] = useState<'landing' | 'login'>('landing');
+  const [showDebug, setShowDebug] = useState(false);
 
   // Login State
   // Hardcoded defaults as requested
@@ -55,7 +57,12 @@ const Login: React.FC = () => {
   );
 
   const renderLanding = () => (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
+          <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 100 }}>
+             <IonButton fill="clear" onClick={() => setShowDebug(true)}>
+                 <IonIcon icon={bugOutline} color="medium" />
+             </IonButton>
+          </div>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '20px', textAlign: 'center' }}>
             <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '10px' }}>
                 <span style={{ color: 'var(--ion-color-dark)' }}>Hemo</span>
@@ -78,7 +85,12 @@ const Login: React.FC = () => {
   );
 
   const renderLogin = () => (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
+          <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 100 }}>
+             <IonButton fill="clear" onClick={() => setShowDebug(true)}>
+                 <IonIcon icon={bugOutline} color="medium" />
+             </IonButton>
+          </div>
           <div style={{ textAlign: 'center', marginBottom: '40px', marginTop: '60px', padding: '0 20px' }}>
             <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '30px' }}>
                 <span style={{ color: 'var(--ion-color-dark)' }}>Hemo</span>
@@ -168,6 +180,7 @@ const Login: React.FC = () => {
           message={alertMessage}
           buttons={['OK']}
         />
+        <DebugConsoleModal isOpen={showDebug} onClose={() => setShowDebug(false)} />
       </IonContent>
     </IonPage>
   );

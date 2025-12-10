@@ -24,7 +24,7 @@ async function bootstrap() {
   // CORS Configuration
   app.enableCors({ 
     credentials: true, 
-    origin: process.env.APP_CORS_WHITELIST ? process.env.APP_CORS_WHITELIST.split(',') : '*', 
+    origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', 
     allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With, X-HTTP-Method-Override, Origin, X-Frame-Options, X-XSRF-TOKEN, Referer, X-Client-Loading',
     exposedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With, X-HTTP-Method-Override, Origin, X-Frame-Options, X-XSRF-TOKEN, Referer, X-Client-Loading', 
