@@ -95,6 +95,15 @@ class ApiService {
         });
     }
 
+    // Generic POST method
+    public async post<T = any>(url: string, body: any): Promise<T> {
+        return this.request<T>(url, {
+            method: 'POST',
+            headers: this.getHeaders(),
+            body: JSON.stringify(body),
+        });
+    }
+
     public async getHistory(patientId: string, token?: string): Promise<HistoryItem[]> {
         return this.request<HistoryItem[]>(`/history/patient/${patientId}`, {
             method: 'GET',

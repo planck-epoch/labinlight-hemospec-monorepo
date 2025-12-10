@@ -7,7 +7,6 @@ import java.io.IOException;
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        registerPlugin(MetaScanPlugin.class);
         super.onCreate(savedInstanceState);
         try {
             Runtime.getRuntime().exec("logcat -d");

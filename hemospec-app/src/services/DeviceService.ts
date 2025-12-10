@@ -1,26 +1,22 @@
-import { registerPlugin, Capacitor } from '@capacitor/core';
-import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions';
+import { BleClient, BleDevice, ScanResult as BleScanResult } from '@capacitor-community/bluetooth-le';
+import { Capacitor } from '@capacitor/core';
 import { ANALYSIS_PAYLOAD_TEMPLATE } from './payloadTemplate';
+import { apiService } from './ApiService';
 
-export interface MetaScanPlugin {
-  startScan(): Promise<void>;
-  stopScan(): Promise<void>;
-  connect(options: { address: string }): Promise<void>;
-  disconnect(options: { address: string }): Promise<void>;
-  performScan(): Promise<void>;
-  getScanData(): Promise<any>;
-  getDeviceStatus(): Promise<any>;
-  addListener(eventName: 'deviceFound', listenerFunc: (device: { name: string; address: string; rssi: number }) => void): Promise<any>;
-  addListener(eventName: 'metaScanEvent', listenerFunc: (event: { event: string; data?: any }) => void): Promise<any>;
-}
+export type { BleDevice };
 
-const MetaScan = registerPlugin<MetaScanPlugin>('MetaScan');
+// UUID Definition
+// Base UUID Pattern: 534552xx-444C-5020-4E49-52204E616E6F (derived from user info)
+// Services:
+// Scan Data Info Service (GSDIS): 53455206-444C-5020-4E49-52204E616E6F
+const SCAN_DATA_SERVICE_UUID = '53455206-444c-5020-4e49-52204e616e6f';
 
-export interface BleDevice {
-    deviceId: string;
-    name: string;
-    rssi: number;
-}
+// Characteristics:
+// Start Scan: 0x4348411D -> 4348411d-444c-5020-4e49-52204e616e6f
+const START_SCAN_CHAR_UUID = '4348411d-444c-5020-4e49-52204e616e6f';
+
+// Return Serialized Scan Data: 0x43484128 -> 43484128-444c-5020-4e49-52204e616e6f
+const READ_SCAN_DATA_CHAR_UUID = '43484128-444c-5020-4e49-52204e616e6f';
 
 export interface DeviceStatus {
     connected: boolean;
@@ -38,99 +34,36 @@ export interface ScanResult {
     [key: string]: any;
 }
 
+// Export for backward compatibility
+export interface DeviceResult {
+    [key: string]: any;
+}
+
 class DeviceService {
     private status: DeviceStatus = {
         connected: false,
-        batteryLevel: 0,
+        batteryLevel: 85, // Mock default
         isScanning: false,
-        cartridgeInserted: false,
-        temperature: 0,
-        serialNumber: ''
+        cartridgeInserted: true, // Mock default
+        temperature: 25.0, // Mock default
+        serialNumber: '6100023'
     };
     private subscribers: ((status: DeviceStatus) => void)[] = [];
-    private connectedDeviceAddress: string | null = null;
+    private connectedDeviceId: string | null = null;
     private discoveredDevices: BleDevice[] = [];
-    private pendingScanResolve: ((value: any) => void) | null = null;
+    private bleInitialized = false;
 
     constructor() {
-        this.initListeners();
+        this.init();
     }
 
-    private async requestAndroidPermissions(): Promise<boolean> {
-        if (Capacitor.getPlatform() !== 'android') {
-            return true; 
-        }
-
+    private async init() {
         try {
-            let androidPermissions: any = AndroidPermissions;
-            if (typeof AndroidPermissions === 'function') {
-                 androidPermissions = new (AndroidPermissions as any)();
-            }
-
-            // Determine Android version-specific permissions
-            // Note: requesting legacy permissions on Android 12 usually auto-grants, 
-            // but let's be specific to avoid errors.
-            const permissionsToRequest = [
-                'android.permission.ACCESS_FINE_LOCATION',
-                'android.permission.ACCESS_COARSE_LOCATION',
-                'android.permission.BLUETOOTH_SCAN',
-                'android.permission.BLUETOOTH_CONNECT'
-            ];
-
-            const response = await androidPermissions.requestPermissions(permissionsToRequest);
-            
-            // Check if specifically BLUETOOTH_SCAN is granted if on newer device
-            // or just return the general hasPermission flag
-            return response.hasPermission;
+            await BleClient.initialize();
+            this.bleInitialized = true;
         } catch (error) {
-            console.error('Error requesting permissions:', error);
-            return false;
+            console.error('BLE Initialization failed:', error);
         }
-    }
-
-    private async initListeners() {
-        const hasPermission = await this.requestAndroidPermissions();
-
-        if (!hasPermission) {
-            console.error("Required Bluetooth permissions were denied.");
-            return;
-        }
-        await MetaScan.addListener('deviceFound', async (device) => {
-             const bleDevice: BleDevice = {
-                 deviceId: device.address,
-                 name: device.name,
-                 rssi: device.rssi
-             };
-             if (!this.discoveredDevices.find(d => d.deviceId === bleDevice.deviceId)) {
-                 this.discoveredDevices.push(bleDevice);
-             }
-             // Auto-connect to NIRScan devices for smoother UX if in scanning mode
-             if (this.status.isScanning && device.name.includes("NIR")) {
-                 this.stopScanning();
-                 this.connect(device.address);
-             }
-        });
-
-        await MetaScan.addListener('metaScanEvent', async (data) => {
-             console.log('SDK Event:', data.event);
-             if (data.event === 'NOTIFY_COMPLETE') {
-                 this.updateStatus({ connected: true });
-                 // If we were waiting for scan data, fetch it now
-                 if (this.pendingScanResolve) {
-                     try {
-                         const scanData = await MetaScan.getScanData();
-                         this.pendingScanResolve(scanData);
-                     } catch(e) {
-                         console.error("Error fetching scan data:", e);
-                         this.pendingScanResolve(null);
-                     }
-                     this.pendingScanResolve = null;
-                 }
-             } else if (data.event === 'DISCONNECTED') {
-                 this.updateStatus({ connected: false });
-                 this.connectedDeviceAddress = null;
-             }
-        });
     }
 
     private updateStatus(newStatus: Partial<DeviceStatus>) {
@@ -150,67 +83,136 @@ class DeviceService {
         };
     }
 
-    public async connect(address: string): Promise<boolean> {
-        const hasPermission = await this.requestAndroidPermissions();
-
-        if (!hasPermission) {
-            console.error("Required Bluetooth permissions were denied.");
-            return false;
-        }
+    public async connect(deviceId: string): Promise<boolean> {
+        if (!this.bleInitialized) await this.init();
 
         try {
-            await MetaScan.connect({ address });
-            this.connectedDeviceAddress = address;
+            await BleClient.connect(deviceId, (deviceId) => {
+                console.log('Device disconnected:', deviceId);
+                this.updateStatus({ connected: false });
+                this.connectedDeviceId = null;
+            });
+
+            this.connectedDeviceId = deviceId;
             this.updateStatus({ connected: true });
-            try {
-                const status = await MetaScan.getDeviceStatus();
-                this.updateStatus({
-                    batteryLevel: status.battery,
-                    temperature: status.temp,
-                    serialNumber: status.serial
-                });
-            } catch(e) {
-                console.warn("Could not fetch device status on connect", e);
-            }
+            console.log('Connected to device:', deviceId);
+
             return true;
-        } catch (e) {
-            console.error("Connection failed", e);
+        } catch (error) {
+            console.error('Connection failed:', error);
             this.updateStatus({ connected: false });
             return false;
         }
     }
 
     public async scanAndConnect(): Promise<void> {
+        if (!this.bleInitialized) await this.init();
         if (this.status.connected) return;
+
         this.updateStatus({ isScanning: true });
         this.discoveredDevices = [];
+
         try {
-            await MetaScan.startScan();
-            return new Promise((resolve, reject) => {
-                const checkInterval = setInterval(() => {
-                    if (this.status.connected) {
-                        clearInterval(checkInterval);
-                        resolve();
+            await BleClient.requestLEScan(
+                {
+                    // namePrefix: 'NIR' // Optional
+                },
+                (result) => {
+                    if (result.device.name && result.device.name.includes('NIR')) {
+                        console.log('Found NIR device:', result.device);
+                         BleClient.stopLEScan().then(() => {
+                             this.connect(result.device.deviceId);
+                         });
                     }
-                }, 500);
-                setTimeout(() => {
-                    if (!this.status.connected) {
-                        clearInterval(checkInterval);
-                        this.stopScanning();
-                        reject(new Error("No device found or connected"));
-                    }
-                }, 10000);
-            });
-        } catch (e) {
+                }
+            );
+
+            // Timeout to stop scanning
+            setTimeout(async () => {
+                if (!this.status.connected) {
+                    await BleClient.stopLEScan();
+                    this.updateStatus({ isScanning: false });
+                }
+            }, 10000);
+
+        } catch (error) {
+            console.error('Scanning failed:', error);
             this.updateStatus({ isScanning: false });
-            throw e;
+            throw error;
         }
     }
 
+    public async startScanForDevices(): Promise<void> {
+        if (!this.bleInitialized) await this.init();
+        this.updateStatus({ isScanning: true });
+        this.discoveredDevices = [];
+
+        try {
+            await BleClient.requestLEScan({}, (result) => {
+                if (result.device.name && result.device.name.includes('NIR')) {
+                     const exists = this.discoveredDevices.find(d => d.deviceId === result.device.deviceId);
+                     if (!exists) {
+                         this.discoveredDevices.push(result.device);
+                         // Notify 'deviceFound' listeners if we had any.
+                     }
+                }
+            });
+
+             setTimeout(async () => {
+                await BleClient.stopLEScan();
+                this.updateStatus({ isScanning: false });
+            }, 10000);
+        } catch (e) {
+            console.error('Scan error', e);
+            this.updateStatus({ isScanning: false });
+        }
+    }
+
+    public getDiscoveredDevices() {
+        return this.discoveredDevices;
+    }
+
+    // This method is used by DeviceConnectionModal to get list of devices
+    public async scan(): Promise<BleDevice[]> {
+        if (!this.bleInitialized) await this.init();
+        this.updateStatus({ isScanning: true });
+        this.discoveredDevices = [];
+
+        return new Promise(async (resolve) => {
+            const found: BleDevice[] = [];
+            try {
+                await BleClient.requestLEScan({}, (result) => {
+                    if (result.device.name && result.device.name.includes('NIR')) {
+                         if (!found.find(d => d.deviceId === result.device.deviceId)) {
+                             found.push(result.device);
+                         }
+                    }
+                });
+            } catch(e) { console.error(e); }
+
+            // Scan for 3 seconds then return
+            setTimeout(async () => {
+                await BleClient.stopLEScan();
+                this.updateStatus({ isScanning: false });
+                this.discoveredDevices = found;
+                resolve(found);
+            }, 3000);
+        });
+    }
+
+    public async stopScanning() {
+        try {
+            await BleClient.stopLEScan();
+        } catch(e) {
+            // ignore
+        }
+        this.updateStatus({ isScanning: false });
+    }
+
     public async disconnect() {
-        if (this.connectedDeviceAddress) {
-            await MetaScan.disconnect({ address: this.connectedDeviceAddress });
-            this.connectedDeviceAddress = null;
+        if (this.connectedDeviceId) {
+            await BleClient.disconnect(this.connectedDeviceId);
+            this.connectedDeviceId = null;
             this.updateStatus({ connected: false });
         }
     }
@@ -219,76 +221,132 @@ class DeviceService {
         return this.status.connected;
     }
 
-    public async startScanForDevices(): Promise<void> {
-        const hasPermission = await this.requestAndroidPermissions();
+    public async getTemperature(): Promise<number> {
+        return this.status.temperature || 25.0;
+    }
 
-        if (!hasPermission) {
-            console.error("Required Bluetooth permissions were denied.");
-            return;
+    public async insertCartridge(): Promise<void> {
+        this.updateStatus({ cartridgeInserted: true });
+    }
+
+    // Main Scan Logic
+    public async performSpectralScan(): Promise<ScanResult> {
+        if (!this.connectedDeviceId || !this.status.connected) throw new Error("Device not connected");
+
+        console.log('Starting Spectral Scan...');
+
+        // 1. Trigger Scan
+        // Write 0x01 to Start Scan Char
+        const data = new DataView(new ArrayBuffer(1));
+        data.setUint8(0, 1);
+
+        await BleClient.write(
+            this.connectedDeviceId,
+            SCAN_DATA_SERVICE_UUID,
+            START_SCAN_CHAR_UUID,
+            data
+        );
+        console.log('Scan command sent.');
+
+        // 2. Wait for completion
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        console.log('Waited 3s for scan completion.');
+
+        // 3. Read Data
+        // Logic: Read Loop
+
+        let allBytes: number[] = [];
+        let reading = true;
+        let packetIndex = 0;
+        let expectedSize = 0;
+
+        let maxLoops = 100;
+
+        while (reading && maxLoops > 0) {
+            maxLoops--;
+            try {
+                const value = await BleClient.read(
+                    this.connectedDeviceId,
+                    SCAN_DATA_SERVICE_UUID,
+                    READ_SCAN_DATA_CHAR_UUID
+                );
+
+                const rawBytes = new Uint8Array(value.buffer);
+                console.log(`Read packet ${packetIndex}, len: ${rawBytes.length}`);
+
+                if (rawBytes.length === 0) {
+                    if (allBytes.length > 0 && allBytes.length >= expectedSize) {
+                         reading = false;
+                    } else {
+                         await new Promise(r => setTimeout(r, 100));
+                         continue;
+                    }
+                }
+
+                const index = rawBytes[0];
+                if (index === 0 && packetIndex === 0) {
+                     expectedSize = value.getUint32(1, true); // Try little endian
+                     if (expectedSize > 10000 || expectedSize === 0) {
+                         expectedSize = value.getUint32(1, false);
+                     }
+                     console.log('Expected Data Size:', expectedSize);
+                } else {
+                     for (let i = 1; i < rawBytes.length; i++) {
+                         allBytes.push(rawBytes[i]);
+                     }
+                }
+
+                if (expectedSize > 0 && allBytes.length >= expectedSize) {
+                    console.log('Read complete. Total bytes:', allBytes.length);
+                    reading = false;
+                }
+
+                packetIndex++;
+
+            } catch (e) {
+                console.error('Error reading packet', e);
+                reading = false;
+            }
         }
 
-        this.discoveredDevices = [];
-        this.updateStatus({ isScanning: true });
-        await MetaScan.startScan();
-    }
-
-    public async stopScanning() {
-        await MetaScan.stopScan();
-        this.updateStatus({ isScanning: false });
-    }
-
-    // Legacy method for compatibility
-    public async scan(): Promise<ScanResult> {
-        // Run spectral scan
-        return this.performSpectralScan();
-    }
-
-    public async performSpectralScan(): Promise<ScanResult> {
-        if (!this.status.connected) throw new Error("Device not connected");
-
-        return new Promise(async (resolve, reject) => {
-            this.pendingScanResolve = resolve;
-            // 15s timeout
-            setTimeout(() => {
-                if (this.pendingScanResolve) {
-                    this.pendingScanResolve = null;
-                    reject(new Error("Scan timed out"));
-                }
-            }, 15000);
-
-            try {
-                await MetaScan.performScan();
-            } catch (e) {
-                this.pendingScanResolve = null;
-                reject(e);
+        // 4. Reconstruct Intensities
+        let intensities: number[] = [];
+        if (allBytes.length >= 4) {
+            const buffer = new Uint8Array(allBytes).buffer;
+            const dataView = new DataView(buffer);
+            const count = Math.floor(allBytes.length / 4);
+            for (let i = 0; i < count; i++) {
+                intensities.push(dataView.getInt32(i * 4, true));
             }
-        });
+        }
+
+        console.log('Parsed Intensities:', intensities.slice(0, 10), '...');
+
+        const result: ScanResult = {
+            intensities: intensities,
+            wavelengths: [] // Will be filled by payload template mock
+        };
+
+        return result;
     }
 
-    public formatScanData(scanResult: ScanResult | null): any {
-        // Deep copy the template
+    public formatScanData(data: any): any {
+        return data;
+    }
+
+    public constructPayload(scanData: ScanResult, patientInfo: { patientId: string, age: number, gender: string }) {
         const payload = JSON.parse(JSON.stringify(ANALYSIS_PAYLOAD_TEMPLATE));
 
-        if (scanResult) {
-            if (scanResult.intensities && Array.isArray(scanResult.intensities) && scanResult.intensities.length > 0) {
-                payload.Samples[0].Intensity = scanResult.intensities;
-            }
-            if (scanResult.wavelengths && Array.isArray(scanResult.wavelengths) && scanResult.wavelengths.length > 0) {
-                payload.Samples[0].WaveLength = scanResult.wavelengths;
-                payload.Samples[0].Wavelength = scanResult.wavelengths; // Template has both
-            }
+        payload.PatientId = patientInfo.patientId;
+        payload.Age = patientInfo.age;
+        payload.Sex = patientInfo.gender;
+        payload.DateReading = new Date().toISOString();
+
+        if (scanData.intensities && scanData.intensities.length > 0) {
+            payload.Samples[0].Intensity = scanData.intensities;
         }
 
-        // Ensure SerialNumber is set
-        if (!payload.SerialNumber || payload.SerialNumber === "") {
-            payload.SerialNumber = "0000000";
-        }
-        if (payload.Samples && payload.Samples[0] && (!payload.Samples[0].SerialNumber || payload.Samples[0].SerialNumber === "")) {
-             // The sample might not have SerialNumber field in template?
-             // Template has "SerialNumber" at root.
-             // And "RefSerialNumber" in Sample.
-        }
-
+        payload.SerialNumber = this.status.serialNumber || "6100023";
         return payload;
     }
 }

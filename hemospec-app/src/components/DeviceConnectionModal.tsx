@@ -126,7 +126,7 @@ const DeviceConnectionModal: React.FC<Props> = ({ isOpen, onDismiss, onDeviceRea
                                     <IonIcon icon={bluetoothOutline} slot="start" />
                                     <IonLabel>
                                         <h2>{dev.name}</h2>
-                                        <p>Signal: {dev.rssi}</p>
+                                        <p>Device ID: {dev.deviceId}</p>
                                     </IonLabel>
                                 </IonItem>
                             ))}

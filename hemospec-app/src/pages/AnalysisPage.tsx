@@ -39,6 +39,8 @@ const AnalysisPage: React.FC = () => {
     // Step 2: Scanning Logic
     useEffect(() => {
         let mounted = true;
+        let progressInterval: any;
+
         const performScan = async () => {
             if (step !== 'scanning') return;
 
@@ -46,7 +48,7 @@ const AnalysisPage: React.FC = () => {
             try {
                 // 1. Connect (if not already) and Start Scan
                 // Simulate progress for UX while connection/scanning happens
-                const progressInterval = setInterval(() => {
+                progressInterval = setInterval(() => {
                     setProgress(prev => {
                         if (prev >= 90) return prev;
                         return prev + 5;
@@ -94,16 +96,20 @@ const AnalysisPage: React.FC = () => {
         };
 
         performScan();
-        return () => { mounted = false; };
+        return () => {
+            mounted = false;
+            if (progressInterval) clearInterval(progressInterval);
+        };
     }, [step]);
 
     // Step 3: Analysis Logic
     useEffect(() => {
+        let progressInterval: any;
         const analyze = async () => {
             if (step !== 'analyzing' || !scanData) return;
 
             setProgress(0);
-            const progressInterval = setInterval(() => {
+            progressInterval = setInterval(() => {
                  setProgress(prev => Math.min(prev + 10, 90));
             }, 300);
 
@@ -132,6 +138,9 @@ const AnalysisPage: React.FC = () => {
         };
 
         analyze();
+        return () => {
+             if (progressInterval) clearInterval(progressInterval);
+        };
     }, [step, scanData]);
 
 
