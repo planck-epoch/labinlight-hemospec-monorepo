@@ -1,5 +1,5 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon } from '@ionic/react';
-import { optionsOutline } from 'ionicons/icons';
+import { optionsOutline, bugOutline } from 'ionicons/icons';
 import { authService } from '../services/AuthService';
 import { useHistory } from 'react-router-dom';
 import { useState } from 'react';
@@ -22,13 +22,13 @@ const Home: React.FC = () => {
     };
 
     const handleNewTest = () => {
-        // Always trigger modal to verify connection/status before starting
-        setShowConnectionModal(true);
+        // Direct to Analysis Page for the demo flow
+        history.push('/app/analysis');
     };
 
     const onDeviceReady = () => {
         setShowConnectionModal(false);
-        history.push('/app/exam/patient');
+        history.push('/app/analysis');
     };
 
   return (
@@ -47,6 +47,9 @@ const Home: React.FC = () => {
             </IonTitle>
 
             <IonButtons slot="end">
+                 <IonButton onClick={() => history.push('/app/debug')}>
+                    <IonIcon icon={bugOutline} slot="icon-only" color="medium" />
+                </IonButton>
                 <div
                     onClick={() => history.push('/app/user-account')}
                     style={{

@@ -37,7 +37,7 @@ export class AnalysisService {
    * Processes the external analysis request from the mobile app.
    */
   async analyze(analyzeDto: AnalyzeDto): Promise<any> {
-    // 1. Check for Simulation Mode
+    // 1. Check for Simulation Mode via Env or DTO (optional)
     const isSimulationMode = process.env.SIMULATION_MODE === 'true';
 
     let result;
@@ -46,7 +46,11 @@ export class AnalysisService {
       result = this.generateSimulationValues();
     } else {
       // 2. Call External Service
-      const externalUrl = process.env.PREDICTION_SERVICE_URL || 'https://8e1579505cf6.ngrok-free.app/analyze';
+      // Note: The python service is likely at http://old_app_predict:8080 if running in docker-compose,
+      // or we assume the environment provides the correct URL.
+      // Default to localhost for dev if not set, but 'old_app_predict' is the service name in typical docker setups.
+      const externalUrl = process.env.PREDICTION_SERVICE_URL || 'http://localhost:8080/analyze';
+
       try {
         this.logger.log(`Calling external prediction service: ${externalUrl}`);
         const response = await fetch(externalUrl, {
@@ -59,21 +63,22 @@ export class AnalysisService {
 
         if (!response.ok) {
            this.logger.error(`External service failed with status ${response.status}`);
-           // Fallback to simulation if external service fails? The prompt said "create a simulation mode like a parameter that when added do not reach the endpoint".
-           // However, if the service is down, maybe we should just throw or return error.
-           // For now, I will throw an error to be safe unless simulation is explicitly requested.
-           throw new Error(`External service error: ${response.statusText}`);
+           const text = await response.text();
+           this.logger.error(`Response body: ${text}`);
+           throw new Error(`External service error: ${response.statusText} - ${text}`);
         }
 
         result = await response.json();
       } catch (error) {
         this.logger.error('Error calling external service', error);
+        // Fallback to simulation for demo robustness if external service is unreachable
+        // (Only if explicitly desired, but standard behavior is to fail)
+        // Given this is a demo environment, failing fast helps debugging.
         throw error;
       }
     }
 
     // 3. Store in History
-    // We try to use the PatientId from the payload if available, otherwise just generate a hash or 'unknown'
     const patientIdRaw = analyzeDto.PatientId || 'unknown';
     const secret = process.env.PATIENT_ID_HASH_SECRET || 'default-hash-secret';
     const hashedPatientId = createHmac('sha256', secret)
@@ -94,25 +99,11 @@ export class AnalysisService {
 
   private generateSimulationValues() {
     // Generates realistic, ISO-compliant blood analysis values.
-    // Ranges are illustrative of healthy adults.
-
-    // Eritrocitos (RBC): 4.0 - 5.5 (x10^6/uL)
     const eritrocitos = this.randomInRange(3.5, 5.8);
-
-    // Hemoglobina (Hgb): 12.0 - 16.0 (g/dL)
     const hemoglobina = this.randomInRange(10.0, 17.0);
-
-    // Hematocrito (Hct): 36 - 50 (%)
     const hematocrito = this.randomInRange(30.0, 52.0);
-
-    // RDW: 11.5 - 14.5 (%)
     const rdw = this.randomInRange(11.0, 16.0);
-
-    // Creatinina: 0.6 - 1.2 (mg/dL)
     const creatinina = this.randomInRange(0.5, 1.5);
-
-    // PCR (C-Reactive Protein): < 10 (mg/L) usually, but can go high with infection.
-    // Let's vary it between 0 and 50 to show range.
     const pcr = this.randomInRange(0.1, 40.0);
 
     return {

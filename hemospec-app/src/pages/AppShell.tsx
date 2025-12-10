@@ -6,6 +6,8 @@ import History from './History';
 import Settings from './Settings';
 import ExamShell from './exam/ExamShell';
 import UserAccount from './UserAccount';
+import AnalysisPage from './AnalysisPage';
+import DebugPage from './DebugPage';
 
 const AppShell: React.FC = () => {
     return (
@@ -31,6 +33,10 @@ const AppShell: React.FC = () => {
                 </Route>
 
                 <Route path="/app/exam" component={ExamShell} />
+
+                {/* New Analysis Page Route - overriding exam shell for the demo flow */}
+                <Route path="/app/analysis" component={AnalysisPage} />
+                <Route path="/app/debug" component={DebugPage} />
 
                 <Route exact path="/app">
                     <Redirect to="/app/home" />

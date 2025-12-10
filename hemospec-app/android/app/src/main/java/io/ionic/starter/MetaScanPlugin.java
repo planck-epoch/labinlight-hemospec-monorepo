@@ -36,6 +36,7 @@ import com.getcapacitor.annotation.Permission;
         @Permission(
             alias = "bluetooth",
             strings = {
+                Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.BLUETOOTH,
                 Manifest.permission.BLUETOOTH_ADMIN,
@@ -61,34 +62,6 @@ public class MetaScanPlugin extends Plugin {
         public void onReceive(Context context, Intent intent) {
              JSObject ret = new JSObject();
              ret.put("event", "SCAN_DATA_READY");
-
-             // Attempt to marshall data immediately if available
-             try {
-                 if (ISCMetaScanSDK.Interpret_length > 0) {
-                     JSArray wavelengths = new JSArray();
-                     if (ISCMetaScanSDK.Interpret_wavelength != null) {
-                         for (double d : ISCMetaScanSDK.Interpret_wavelength) {
-                             wavelengths.put(d);
-                         }
-                     }
-
-                     JSArray intensities = new JSArray();
-                     if (ISCMetaScanSDK.Interpret_intensity != null) {
-                         for (int i : ISCMetaScanSDK.Interpret_intensity) {
-                             intensities.put(i);
-                         }
-                     }
-
-                     JSObject data = new JSObject();
-                     data.put("length", ISCMetaScanSDK.Interpret_length);
-                     data.put("wavelengths", wavelengths);
-                     data.put("intensities", intensities);
-                     ret.put("data", data);
-                 }
-             } catch (Exception e) {
-                 Log.e(TAG, "Error marshalling scan data", e);
-             }
-
              notifyListeners("metaScanEvent", ret);
         }
     };
@@ -291,12 +264,53 @@ public class MetaScanPlugin extends Plugin {
                  ret.put("wavelengths", wavelengths);
                  ret.put("intensities", intensities);
 
+                 // Extra fields for payload construction
+                 // Note: Ideally we should use GetSerialNumber() etc, but those are async and return via broadcast.
+                 // For now, we rely on static fields if available or assume the frontend triggers get info separately.
+                 // Checking ScanConfig info from SDK static fields:
+                 ret.put("ScanConfig_serial_number", ISCMetaScanSDK.ScanConfig_serial_number);
+                 ret.put("ScanConfigName", ISCMetaScanSDK.ScanConfigName);
+                 ret.put("ScanConfigType", ISCMetaScanSDK.ScanConfigType);
+
+                 // Environmental data from last scan if available
+                 if(ISCMetaScanSDK.Scan_Config_Info != null) {
+                     ret.put("PGA", ISCMetaScanSDK.Scan_Config_Info.pga[0]);
+                     ret.put("Exposure", ISCMetaScanSDK.Scan_Config_Info.exposure_time[0]);
+                 }
+
+                 // Other fields from static vars if they exist
+                 ret.put("DetectorTemp", ISCMetaScanSDK.DetectorTemp);
+                 ret.put("Humidity", ISCMetaScanSDK.Humidity);
+                 ret.put("SystemTemp", ISCMetaScanSDK.SystemTemp);
+                 ret.put("LampPD", ISCMetaScanSDK.LampPD);
+
                  call.resolve(ret);
             } else {
                  call.reject("No data");
             }
         } catch (Exception e) {
             call.reject("Error retrieving data: " + e.getMessage());
+        }
+    }
+
+    @PluginMethod
+    public void getDeviceStatus(PluginCall call) {
+        // Trigger status read. This is async, so we might just trigger it here
+        // and let the frontend listen for "DEVICE_STATUS_UPDATE" event if we implemented it,
+        // but for now we will just return what we have in static variables or trigger the SDK call.
+
+        try {
+            ISCMetaScanSDK.GetDeviceStatus();
+            ISCMetaScanSDK.GetSerialNumber();
+            // We resolve immediately, the frontend should wait a bit or listen for events.
+            // Or we can return the current static values.
+            JSObject ret = new JSObject();
+            ret.put("battery", ISCMetaScanSDK.Battery);
+            ret.put("temp", ISCMetaScanSDK.SystemTemp);
+            ret.put("serial", ISCMetaScanSDK.ScanConfig_serial_number);
+            call.resolve(ret);
+        } catch(Exception e) {
+            call.reject("Error getting status: " + e.getMessage());
         }
     }
 
