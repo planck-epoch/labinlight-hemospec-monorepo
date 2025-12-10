@@ -58,6 +58,12 @@ public class MetaScanPlugin extends Plugin {
     private static final long SCAN_PERIOD = 10000;
     private static final String TAG = "MetaScanPlugin";
 
+    // Cached device status
+    private int mBattery = 0;
+    private float mTemp = 0;
+    private float mHumidity = 0;
+    private long mLampTime = 0;
+
     private final BroadcastReceiver ScanDataReadyReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -91,6 +97,24 @@ public class MetaScanPlugin extends Plugin {
              JSObject ret = new JSObject();
              ret.put("event", "DISCONNECTED");
              notifyListeners("metaScanEvent", ret);
+        }
+    };
+
+    private final BroadcastReceiver GetDeviceStatusReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            mBattery = intent.getIntExtra(ISCMetaScanSDK.EXTRA_BATT, 0);
+            mTemp = intent.getFloatExtra(ISCMetaScanSDK.EXTRA_TEMP, 0);
+            mHumidity = intent.getFloatExtra(ISCMetaScanSDK.EXTRA_HUMID, 0);
+            mLampTime = intent.getLongExtra(ISCMetaScanSDK.EXTRA_LAMPTIME, 0);
+
+            JSObject ret = new JSObject();
+            ret.put("event", "DEVICE_STATUS_UPDATE");
+            ret.put("battery", mBattery);
+            ret.put("temp", mTemp);
+            ret.put("humidity", mHumidity);
+            ret.put("lampTime", mLampTime);
+            notifyListeners("metaScanEvent", ret);
         }
     };
 
@@ -128,6 +152,7 @@ public class MetaScanPlugin extends Plugin {
         LocalBroadcastManager.getInstance(context).registerReceiver(ScanStartedReceiver, new IntentFilter(ISCMetaScanSDK.ACTION_SCAN_STARTED));
         LocalBroadcastManager.getInstance(context).registerReceiver(NotifyCompleteReceiver, new IntentFilter(ISCMetaScanSDK.ACTION_NOTIFY_DONE));
         LocalBroadcastManager.getInstance(context).registerReceiver(DisconnectReceiver, new IntentFilter(ISCMetaScanSDK.ACTION_GATT_DISCONNECTED));
+        LocalBroadcastManager.getInstance(context).registerReceiver(GetDeviceStatusReceiver, new IntentFilter(ISCMetaScanSDK.ACTION_STATUS));
     }
 
     @Override
@@ -139,6 +164,7 @@ public class MetaScanPlugin extends Plugin {
         LocalBroadcastManager.getInstance(context).unregisterReceiver(ScanStartedReceiver);
         LocalBroadcastManager.getInstance(context).unregisterReceiver(NotifyCompleteReceiver);
         LocalBroadcastManager.getInstance(context).unregisterReceiver(DisconnectReceiver);
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(GetDeviceStatusReceiver);
     }
 
     @PluginMethod
@@ -265,25 +291,35 @@ public class MetaScanPlugin extends Plugin {
                  ret.put("wavelengths", wavelengths);
                  ret.put("intensities", intensities);
 
-                 // Extra fields for payload construction
-                 // Note: Ideally we should use GetSerialNumber() etc, but those are async and return via broadcast.
-                 // For now, we rely on static fields if available or assume the frontend triggers get info separately.
-                 // Checking ScanConfig info from SDK static fields:
-                 ret.put("ScanConfig_serial_number", ISCMetaScanSDK.ScanConfig_serial_number);
-                 ret.put("ScanConfigName", ISCMetaScanSDK.ScanConfigName);
-                 ret.put("ScanConfigType", ISCMetaScanSDK.ScanConfigType);
-
-                 // Environmental data from last scan if available
-                 if(ISCMetaScanSDK.Scan_Config_Info != null) {
-                     ret.put("PGA", ISCMetaScanSDK.Scan_Config_Info.pga[0]);
-                     ret.put("Exposure", ISCMetaScanSDK.Scan_Config_Info.exposure_time[0]);
+                 // Use current_scanConf if available
+                 if (ISCMetaScanSDK.current_scanConf != null) {
+                     ret.put("ScanConfig_serial_number", ISCMetaScanSDK.current_scanConf.getScanConfigSerialNumber());
+                     ret.put("ScanConfigName", ISCMetaScanSDK.current_scanConf.getConfigName());
+                 } else {
+                     ret.put("ScanConfig_serial_number", "Unknown");
+                     ret.put("ScanConfigName", "Unknown");
                  }
+                 ret.put("ScanConfigType", "Unknown");
 
-                 // Other fields from static vars if they exist
-                 ret.put("DetectorTemp", ISCMetaScanSDK.DetectorTemp);
-                 ret.put("Humidity", ISCMetaScanSDK.Humidity);
-                 ret.put("SystemTemp", ISCMetaScanSDK.SystemTemp);
-                 ret.put("LampPD", ISCMetaScanSDK.LampPD);
+                 // Environmental data from cached status
+                 ret.put("DetectorTemp", mTemp); // Assuming SystemTemp is close enough or use mTemp
+                 ret.put("Humidity", mHumidity);
+                 ret.put("SystemTemp", mTemp);
+                 ret.put("LampPD", 0); // Not available in cached status
+
+                 // Try to get PGA/Exposure from Scan_Config_Info if possible, or current_scanConf
+                 // Scan_Config_Info seems to not be static. We'll skip if not available or assume defaults.
+                 // If the SDK has a way to get last scan config info, it might be in current_scanConf.
+                 // current_scanConf.getSectionExposureTime() returns array.
+
+                 if (ISCMetaScanSDK.current_scanConf != null) {
+                      // Just taking the first section for simplicity as per previous code pattern
+                      int[] exposure = ISCMetaScanSDK.current_scanConf.getSectionExposureTime();
+                      if (exposure != null && exposure.length > 0) {
+                          ret.put("Exposure", exposure[0]);
+                      }
+                      // PGA not directly visible in ScanConfiguration methods seen so far (only section params).
+                 }
 
                  call.resolve(ret);
             } else {
@@ -296,19 +332,19 @@ public class MetaScanPlugin extends Plugin {
 
     @PluginMethod
     public void getDeviceStatus(PluginCall call) {
-        // Trigger status read. This is async, so we might just trigger it here
-        // and let the frontend listen for "DEVICE_STATUS_UPDATE" event if we implemented it,
-        // but for now we will just return what we have in static variables or trigger the SDK call.
-
         try {
             ISCMetaScanSDK.GetDeviceStatus();
             ISCMetaScanSDK.GetSerialNumber();
-            // We resolve immediately, the frontend should wait a bit or listen for events.
-            // Or we can return the current static values.
+
             JSObject ret = new JSObject();
-            ret.put("battery", ISCMetaScanSDK.Battery);
-            ret.put("temp", ISCMetaScanSDK.SystemTemp);
-            ret.put("serial", ISCMetaScanSDK.ScanConfig_serial_number);
+            ret.put("battery", mBattery);
+            ret.put("temp", mTemp);
+            ret.put("humidity", mHumidity);
+            if (ISCMetaScanSDK.current_scanConf != null) {
+                ret.put("serial", ISCMetaScanSDK.current_scanConf.getScanConfigSerialNumber());
+            } else {
+                ret.put("serial", "Unknown");
+            }
             call.resolve(ret);
         } catch(Exception e) {
             call.reject("Error getting status: " + e.getMessage());
