@@ -1,23 +1,23 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
-// This is a placeholder for your database connection module (e.g., TypeOrmModule, PrismaModule).
-// The technical specification mentions PostgreSQL[cite: 40].
-// You would configure your connection here based on your chosen ORM.
 @Module({
   imports: [
-    // Example for TypeORM:
-    // TypeOrmModule.forRootAsync({
-    //   useFactory: () => ({
-    //     type: 'postgres',
-    //     host: process.env.DATABASE_HOST,
-    //     port: parseInt(process.env.DATABASE_PORT, 10) || 5432,
-    //     username: process.env.DATABASE_USER,
-    //     password: process.env.DATABASE_PASSWORD,
-    //     database: process.env.DATABASE_NAME,
-    //     autoLoadEntities: true,
-    //     synchronize: true, // Should be false in production
-    //   }),
-    // }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: process.env.DATABASE_HOST || process.env.POSTGRES_HOST,
+        port: parseInt(process.env.DATABASE_PORT || process.env.POSTGRES_PORT || '5432', 10),
+        username: process.env.DATABASE_USER || process.env.POSTGRES_USER,
+        password: process.env.DATABASE_PASSWORD || process.env.POSTGRES_PASSWORD,
+        database: process.env.DATABASE_NAME || process.env.POSTGRES_DB,
+        autoLoadEntities: true,
+        synchronize: true,
+      }),
+      inject: [ConfigService],
+    }),
   ],
 })
 export class DatabaseModule {}

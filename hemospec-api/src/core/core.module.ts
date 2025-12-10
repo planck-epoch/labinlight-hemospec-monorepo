@@ -15,7 +15,7 @@ const appConfig = registerAs('app', () => ({
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig],
-      envFilePath: '.env',
+      envFilePath: ['.env', '../.env'],
     }),
     DatabaseModule,
   ],
