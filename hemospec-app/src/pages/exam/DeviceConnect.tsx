@@ -1,13 +1,16 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton, IonIcon, IonText, IonSpinner, IonButtons, IonBackButton } from '@ionic/react';
-import { bluetoothOutline, checkmarkCircleOutline, alertCircleOutline } from 'ionicons/icons';
+import { bluetoothOutline, checkmarkCircleOutline, alertCircleOutline, flaskOutline } from 'ionicons/icons';
 import { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { deviceService, DeviceStatus } from '../../services/DeviceService';
+import { apiService } from '../../services/ApiService';
+import { ANALYSIS_PAYLOAD_TEMPLATE } from '../../services/payloadTemplate';
 
 const DeviceConnect: React.FC = () => {
   const history = useHistory();
   const [status, setStatus] = useState<DeviceStatus>({ connected: false, batteryLevel: 0, isScanning: false, cartridgeInserted: false });
   const [error, setError] = useState('');
+  const [isSimulating, setIsSimulating] = useState(false);
 
   useEffect(() => {
     const unsub = deviceService.subscribe(setStatus);
@@ -29,6 +32,35 @@ const DeviceConnect: React.FC = () => {
 
   const startAnalysis = () => {
       history.push('/app/exam/analysis');
+  };
+
+  const handleSimulate = async () => {
+      setIsSimulating(true);
+      setError('');
+      try {
+          // Use template payload
+          let result;
+          try {
+             // Attempt API call first as requested
+             result = await apiService.analyze(ANALYSIS_PAYLOAD_TEMPLATE);
+          } catch (e) {
+             console.warn("API Simulation failed, falling back to dummy data", e);
+             // Fallback to dummy data
+             result = {
+                  "Eritrocitos": 3.58,
+                  "Hemoglobina": 10.8,
+                  "Hematocrito": 32.8,
+                  "RDW": 14.8,
+                  "Creatinina": 1.5,
+                  "PCR": 35.5
+             };
+          }
+
+          history.push('/app/exam/results', { result });
+      } catch (e) {
+          setError('Simulation failed.');
+          setIsSimulating(false);
+      }
   };
 
   return (
@@ -68,13 +100,27 @@ const DeviceConnect: React.FC = () => {
         )}
 
         {!status.connected ? (
-            <IonButton expand="block" onClick={handleScan} disabled={status.isScanning}>
-                {status.isScanning ? (
-                    <>
-                        <IonSpinner name="dots" style={{ marginRight: '10px' }} /> Scanning...
-                    </>
-                ) : 'Scan for Device'}
-            </IonButton>
+            <>
+                <IonButton expand="block" onClick={handleScan} disabled={status.isScanning || isSimulating}>
+                    {status.isScanning ? (
+                        <>
+                            <IonSpinner name="dots" style={{ marginRight: '10px' }} /> Scanning...
+                        </>
+                    ) : 'Scan for Device'}
+                </IonButton>
+
+                <div className="ion-margin-top">
+                    <IonText color="medium"><p>or</p></IonText>
+                    <IonButton expand="block" fill="outline" onClick={handleSimulate} disabled={status.isScanning || isSimulating}>
+                         {isSimulating ? <IonSpinner name="dots" /> : (
+                             <>
+                                <IonIcon icon={flaskOutline} slot="start" />
+                                Simulate Scan
+                             </>
+                         )}
+                    </IonButton>
+                </div>
+            </>
         ) : (
             <div className="ion-text-left fade-in">
                 <div style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '10px', marginBottom: '20px' }}>

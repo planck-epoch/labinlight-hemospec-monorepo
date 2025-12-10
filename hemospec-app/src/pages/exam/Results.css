@@ -1,0 +1,22 @@
+/* Results.css */
+.patient-info h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: var(--ion-color-dark);
+}
+
+.result-card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    height: 100%;
+}
+
+.diff-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-left: 8px;
+}
