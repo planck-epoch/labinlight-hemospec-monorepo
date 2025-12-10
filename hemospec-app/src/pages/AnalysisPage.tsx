@@ -9,6 +9,13 @@ import { useHistory } from 'react-router-dom';
 import { apiService } from '../services/ApiService';
 import { deviceService } from '../services/DeviceService';
 
+const DUMMY_RESULTS = {
+    Hemoglobina: "14.3",
+    Hematocrito: "0.46",
+    RDW: "13.7",
+    Eritrocitos: "4.8"
+};
+
 const AnalysisPage: React.FC = () => {
     const history = useHistory();
 
@@ -73,6 +80,10 @@ const AnalysisPage: React.FC = () => {
                 // 2. Perform Spectral Scan
                 const data = await deviceService.performSpectralScan();
 
+                if (!data) {
+                    throw new Error("No scan data received");
+                }
+
                 clearInterval(progressInterval);
                 if (mounted) {
                     setProgress(100);
@@ -83,12 +94,12 @@ const AnalysisPage: React.FC = () => {
                 console.error("Scan failed", err);
                 if (progressInterval) clearInterval(progressInterval);
                 if (mounted) {
-                    setErrorMsg("Scan failed: " + err.message);
-                    setProgress(0);
+                    // Fallback to dummy results on scan failure
+                    console.log("Using fallback dummy results due to scan failure");
+                    setResult(DUMMY_RESULTS);
+                    setProgress(100);
+                    setTimeout(() => setStep('complete'), 500);
                 }
-                // For DEMO resilience: if scan fails (no device), maybe fallback to mock?
-                // The user said "use hardcoded... for demo", but also "should connect...".
-                // I will leave error state for now to be realistic.
             }
         };
 
@@ -126,7 +137,12 @@ const AnalysisPage: React.FC = () => {
             } catch (err: any) {
                 console.error("Analysis failed", err);
                 clearInterval(progressInterval);
-                setErrorMsg("Analysis failed: " + err.message);
+
+                // Fallback to dummy results on analysis failure
+                console.log("Using fallback dummy results due to analysis failure");
+                setProgress(100);
+                setResult(DUMMY_RESULTS);
+                setTimeout(() => setStep('complete'), 500);
             }
         };
 
