@@ -11,7 +11,10 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@capacitor/core', () => ({
-    registerPlugin: () => mocks
+    registerPlugin: () => mocks,
+    Capacitor: {
+        getPlatform: () => 'web'
+    }
 }));
 
 import { deviceService } from './DeviceService';
