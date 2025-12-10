@@ -12,6 +12,8 @@ services:
       - ${POSTGRES_PORT}:${POSTGRES_PORT}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - lab-network
 
   # Prediction Engine (Python)
   predict:
