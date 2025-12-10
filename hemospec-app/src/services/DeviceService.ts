@@ -58,31 +58,29 @@ class DeviceService {
 
     private async requestAndroidPermissions(): Promise<boolean> {
         if (Capacitor.getPlatform() !== 'android') {
-            return true; // Not Android, permissions usually handled by OS/Manifest
+            return true; 
         }
 
         try {
-            // Check if AndroidPermissions is a class (needs new) or an instance
-            // The type definition says it's an instance, but runtime often exports a class for these plugins
-            // We cast to any to allow 'new' if strictly typed as instance
             let androidPermissions: any = AndroidPermissions;
             if (typeof AndroidPermissions === 'function') {
                  androidPermissions = new (AndroidPermissions as any)();
             }
 
-            // Define permissions needed for Android 12+ and older versions
-            // Using string literals to ensure compatibility if constants are missing in the plugin
+            // Determine Android version-specific permissions
+            // Note: requesting legacy permissions on Android 12 usually auto-grants, 
+            // but let's be specific to avoid errors.
             const permissionsToRequest = [
                 'android.permission.ACCESS_FINE_LOCATION',
                 'android.permission.ACCESS_COARSE_LOCATION',
                 'android.permission.BLUETOOTH_SCAN',
-                'android.permission.BLUETOOTH_CONNECT',
-                'android.permission.BLUETOOTH_ADMIN'
+                'android.permission.BLUETOOTH_CONNECT'
             ];
 
-            // Request all permissions at once
             const response = await androidPermissions.requestPermissions(permissionsToRequest);
-
+            
+            // Check if specifically BLUETOOTH_SCAN is granted if on newer device
+            // or just return the general hasPermission flag
             return response.hasPermission;
         } catch (error) {
             console.error('Error requesting permissions:', error);
@@ -91,6 +89,12 @@ class DeviceService {
     }
 
     private async initListeners() {
+        const hasPermission = await this.requestAndroidPermissions();
+
+        if (!hasPermission) {
+            console.error("Required Bluetooth permissions were denied.");
+            return;
+        }
         await MetaScan.addListener('deviceFound', async (device) => {
              const bleDevice: BleDevice = {
                  deviceId: device.address,

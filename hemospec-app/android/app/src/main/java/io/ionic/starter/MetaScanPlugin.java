@@ -37,14 +37,17 @@ import com.getcapacitor.annotation.PermissionCallback;
         @Permission(
             alias = "bluetooth",
             strings = {
-                // Legacy SDK requires Location permissions even on Android 12+
+               // Runtime permissions for Location (Android 6-11)
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION,
+                // Legacy Bluetooth (Android 11-, Install time)
                 Manifest.permission.BLUETOOTH,
                 Manifest.permission.BLUETOOTH_ADMIN,
-                // These are ignored on older Android versions by the OS, but needed for compilation if targetSDK >= 31
+                // Runtime Bluetooth (Android 12+)
+                // Using string literals to ensure it compiles even if target SDK < 31
                 "android.permission.BLUETOOTH_SCAN",
-                "android.permission.BLUETOOTH_CONNECT"
+                "android.permission.BLUETOOTH_CONNECT",
+                "android.permission.BLUETOOTH_ADVERTISE"
             }
         )
     }
