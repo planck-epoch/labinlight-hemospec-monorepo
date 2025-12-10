@@ -37,6 +37,7 @@ import com.getcapacitor.annotation.PermissionCallback;
         @Permission(
             alias = "bluetooth",
             strings = {
+                // Legacy SDK requires Location permissions even on Android 12+
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.BLUETOOTH,
