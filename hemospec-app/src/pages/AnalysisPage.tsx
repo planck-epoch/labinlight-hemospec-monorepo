@@ -82,7 +82,11 @@ const AnalysisPage: React.FC = () => {
                 }
             } catch (err: any) {
                 console.error("Scan failed", err);
-                if (mounted) setErrorMsg("Scan failed: " + err.message);
+                clearInterval(progressInterval);
+                if (mounted) {
+                    setErrorMsg("Scan failed: " + err.message);
+                    setProgress(0);
+                }
                 // For DEMO resilience: if scan fails (no device), maybe fallback to mock?
                 // The user said "use hardcoded... for demo", but also "should connect...".
                 // I will leave error state for now to be realistic.
