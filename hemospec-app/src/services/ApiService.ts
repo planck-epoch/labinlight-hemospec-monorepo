@@ -86,6 +86,8 @@ class ApiService {
     }
 
     public async analyze(data: any): Promise<AnalyzeResponse> {
+        // Log the exact payload for verification
+        console.log('Analyze Payload:', JSON.stringify(data));
         return this.request<AnalyzeResponse>('/analyze', {
             method: 'POST',
             headers: this.getHeaders(),
