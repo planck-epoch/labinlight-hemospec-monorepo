@@ -1,36 +1,7 @@
-{
-    # Global options block.
-    # email youremail@labinlight.dev
-}
+# Redirect all other main traffic to the backend API
+api.labinlight.dev, www.api.labinlight.dev, labinlight.dev, www.labinlight.dev {
+    # Optional: Remove strict security headers if you are still debugging
+    # header -Strict-Transport-Security
 
-labinlight.dev {
-    header {
-        Strict-Transport-Security max-age=31536000;
-    }
-    
-    encode zstd gzip
-
-    handle {
-        # Serve the React app files from the mounted volume in docker-compose
-        root * /srv
-        try_files {path} /index.html
-        file_server
-    }
-
-    log {
-        output file /var/log/caddy/labinlight.dev-access.log {
-            roll_size 10mb
-            roll_keep 20
-            roll_keep_for 720h
-        }
-    }
-}
-
-www.labinlight.dev {
-    redir https://labinlight.dev{uri}
-}
-
-api.labinlight.dev {
-    # Send API requests to the NestJS backend container defined in docker-compose
     reverse_proxy api:3000
 }
