@@ -1,4 +1,5 @@
-import { registerPlugin } from '@capacitor/core';
+import { registerPlugin, Capacitor } from '@capacitor/core';
+import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions';
 import { ANALYSIS_PAYLOAD_TEMPLATE } from './payloadTemplate';
 
 export interface MetaScanPlugin {
@@ -53,6 +54,40 @@ class DeviceService {
 
     constructor() {
         this.initListeners();
+    }
+
+    private async requestAndroidPermissions(): Promise<boolean> {
+        if (Capacitor.getPlatform() !== 'android') {
+            return true; // Not Android, permissions usually handled by OS/Manifest
+        }
+
+        try {
+            // Check if AndroidPermissions is a class (needs new) or an instance
+            // The type definition says it's an instance, but runtime often exports a class for these plugins
+            // We cast to any to allow 'new' if strictly typed as instance
+            let androidPermissions: any = AndroidPermissions;
+            if (typeof AndroidPermissions === 'function') {
+                 androidPermissions = new (AndroidPermissions as any)();
+            }
+
+            // Define permissions needed for Android 12+ and older versions
+            // Using string literals to ensure compatibility if constants are missing in the plugin
+            const permissionsToRequest = [
+                'android.permission.ACCESS_FINE_LOCATION',
+                'android.permission.ACCESS_COARSE_LOCATION',
+                'android.permission.BLUETOOTH_SCAN',
+                'android.permission.BLUETOOTH_CONNECT',
+                'android.permission.BLUETOOTH_ADMIN'
+            ];
+
+            // Request all permissions at once
+            const response = await androidPermissions.requestPermissions(permissionsToRequest);
+
+            return response.hasPermission;
+        } catch (error) {
+            console.error('Error requesting permissions:', error);
+            return false;
+        }
     }
 
     private async initListeners() {
@@ -112,6 +147,13 @@ class DeviceService {
     }
 
     public async connect(address: string): Promise<boolean> {
+        const hasPermission = await this.requestAndroidPermissions();
+
+        if (!hasPermission) {
+            console.error("Required Bluetooth permissions were denied.");
+            return false;
+        }
+
         try {
             await MetaScan.connect({ address });
             this.connectedDeviceAddress = address;
@@ -174,6 +216,13 @@ class DeviceService {
     }
 
     public async startScanForDevices(): Promise<void> {
+        const hasPermission = await this.requestAndroidPermissions();
+
+        if (!hasPermission) {
+            console.error("Required Bluetooth permissions were denied.");
+            return;
+        }
+
         this.discoveredDevices = [];
         this.updateStatus({ isScanning: true });
         await MetaScan.startScan();
