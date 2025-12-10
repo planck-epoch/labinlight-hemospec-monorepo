@@ -37,8 +37,6 @@ import com.getcapacitor.annotation.PermissionCallback;
         @Permission(
             alias = "bluetooth",
             strings = {
-                // Runtime permissions for Location (Android 12+)
-                Manifest.permission.ACCESS_FINE_LOCATION,
                 // Runtime Bluetooth (Android 12+)
                 // Using string literals to ensure it compiles even if target SDK < 31
                 "android.permission.BLUETOOTH_SCAN",
