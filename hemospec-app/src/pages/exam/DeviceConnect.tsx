@@ -24,7 +24,7 @@ const DeviceConnect: React.FC = () => {
   };
 
   const handleCartridge = () => {
-      deviceService.insertCartridge();
+      deviceService.insertCartridge(true);
   };
 
   const startAnalysis = () => {

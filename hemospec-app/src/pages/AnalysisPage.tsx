@@ -43,10 +43,11 @@ const AnalysisPage: React.FC = () => {
             if (step !== 'scanning') return;
 
             setProgress(0);
+            let progressInterval: any;
             try {
                 // 1. Connect (if not already) and Start Scan
                 // Simulate progress for UX while connection/scanning happens
-                const progressInterval = setInterval(() => {
+                progressInterval = setInterval(() => {
                     setProgress(prev => {
                         if (prev >= 90) return prev;
                         return prev + 5;
@@ -66,8 +67,6 @@ const AnalysisPage: React.FC = () => {
                     // This might prompt user or auto-connect to first found.
                     // For demo, we assume user is near device.
                     // Ideally we might want a "Connect" button before this page, but per instructions we do it here.
-                    await deviceService.connect(""); // Address? Logic in service handles scanning if no address.
-                    // Wait, `connect` requires address. `scanAndConnect` handles the search.
                     await deviceService.scanAndConnect();
                 }
 
@@ -82,7 +81,7 @@ const AnalysisPage: React.FC = () => {
                 }
             } catch (err: any) {
                 console.error("Scan failed", err);
-                clearInterval(progressInterval);
+                if (progressInterval) clearInterval(progressInterval);
                 if (mounted) {
                     setErrorMsg("Scan failed: " + err.message);
                     setProgress(0);

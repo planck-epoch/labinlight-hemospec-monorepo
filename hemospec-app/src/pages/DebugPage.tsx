@@ -72,6 +72,17 @@ const DebugPage: React.FC = () => {
          log(payload);
     };
 
+    const handleCheckPermissions = async () => {
+        log("Checking permissions...");
+        try {
+            const result = await deviceService.checkPermissionsDebug();
+            log("Permission Check Result:");
+            log(result);
+        } catch (e: any) {
+            log("Permission Check Failed: " + e.message);
+        }
+    };
+
     return (
         <IonPage>
             <IonHeader>
@@ -110,6 +121,10 @@ const DebugPage: React.FC = () => {
 
                      <IonButton expand="block" color="light" onClick={handleGetPayload}>
                         Test Payload Construction
+                    </IonButton>
+
+                    <IonButton expand="block" color="warning" onClick={handleCheckPermissions}>
+                        Check Permissions
                     </IonButton>
                 </div>
 
