@@ -1,4 +1,20 @@
 services:
+  # Caddy (Web Server / Reverse Proxy)
+  caddy:
+    image: caddy:2-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile  # Mount your config
+      - caddy_data:/data                  # Persist certificates
+      - caddy_config:/config              # Persist configuration
+    networks:
+      - lab-network
+    depends_on:
+      - api
+      - predict
   # Database
   postgres:
     image: postgres:15-alpine
@@ -44,31 +60,16 @@ services:
       PATIENT_ID_HASH_SECRET: ${PATIENT_ID_HASH_SECRET}
     ports:
       - "${API_PORT}:${API_PORT}"
+    expose:
+      - "3000"
     networks:
       - lab-network
 
-  # Web Server (Caddy)
-  caddy:
-    image: caddy:2-alpine
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - ./hemospec-app/dist:/srv
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - api
-    networks:
-      - lab-network
 
 volumes:
   postgres_data:
   caddy_data:
   caddy_config:
-
 
 networks:
   lab-network:

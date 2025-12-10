@@ -17,14 +17,20 @@ export interface HistoryItem {
 }
 
 class ApiService {
-    private baseUrl = import.meta.env.VITE_LABINLIGHT_API_URL || 'http://labinlight.dev:3000/api';
+    private baseUrl = 'http://labinlight.dev:3000/api';
+    private accessToken: string | null = null;
+
+    public setToken(token: string | null) {
+        this.accessToken = token;
+    }
 
     private getHeaders(token?: string) {
         const headers: HeadersInit = {
             'Content-Type': 'application/json',
         };
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
+        const authToken = token || this.accessToken;
+        if (authToken) {
+            headers['Authorization'] = `Bearer ${authToken}`;
         }
         return headers;
     }
@@ -89,7 +95,7 @@ class ApiService {
         });
     }
 
-    public async getHistory(patientId: string, token: string): Promise<HistoryItem[]> {
+    public async getHistory(patientId: string, token?: string): Promise<HistoryItem[]> {
         return this.request<HistoryItem[]>(`/history/patient/${patientId}`, {
             method: 'GET',
             headers: this.getHeaders(token),

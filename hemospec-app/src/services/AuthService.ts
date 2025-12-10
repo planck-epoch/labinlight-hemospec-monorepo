@@ -15,6 +15,7 @@ class AuthService {
         try {
             const response = await apiService.login(email, password);
             this.token = response.access_token;
+            apiService.setToken(this.token);
 
             // For now, mock the user details as the API only returns token
             this.currentUser = {
@@ -33,6 +34,7 @@ class AuthService {
     public async logout(): Promise<void> {
         this.currentUser = null;
         this.token = null;
+        apiService.setToken(null);
     }
 
     public getUser(): User | null {
